@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Pharmacy ERP — Stakeholder Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page{size:1280px 720px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--p:#2463eb;--pd:#1d4ed8;--p50:#eef4ff;--p100:#dbe7ff;--g:#16a34a;--g50:#ecfdf3;--o:#f97316;--o50:#fff4ec;--pu:#7c3aed;--pu50:#f4efff;--r:#ef4444;--r50:#fef1f1;--t:#0891b2;--t50:#ecfeff;--tx:#0f172a;--mu:#64748b;--bd:#e5e9f2;--bg:#f6f8fc}
+body{font-family:Inter,"Segoe UI",system-ui,sans-serif;color:var(--tx);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.slide{width:1280px;height:720px;position:relative;overflow:hidden;page-break-after:always;break-after:page;background:#fff;padding:64px 72px 56px}
+.slide:last-child{page-break-after:auto;break-after:auto}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--p);margin-bottom:10px}
+h1{font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+h2{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin-bottom:8px}
+.lead{font-size:17px;color:var(--mu);max-width:900px;line-height:1.55}
+.foot{position:absolute;left:72px;right:72px;bottom:24px;display:flex;justify-content:space-between;font-size:11.5px;color:#94a3b8;border-top:1px solid var(--bd);padding-top:10px}
+.foot b{color:var(--p);font-weight:600}
+body{counter-reset:pg}.slide{counter-increment:pg}.pg::after{content:counter(pg)}
+.feat{list-style:none;margin-top:8px}.feat li{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:6.5px 0;border-bottom:1px solid #f1f4f8;font-size:13px;color:#334155;line-height:1.35}.feat li:last-child{border-bottom:0}
+.pr{flex-shrink:0;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:10px}.p0{background:var(--g50);color:var(--g)}.p1{background:var(--p50);color:var(--p)}.p2{background:#f1f5f9;color:var(--mu)}
+.legend{display:flex;gap:16px;font-size:12.5px;color:var(--mu);align-items:center}.fcard{padding:18px 20px}.fcard h3{display:flex;align-items:center;gap:10px;font-size:16px}.fcard h3 .ic{margin:0;width:32px;height:32px}.fcard h3 .ic svg{width:18px;height:18px}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.card{border:1px solid var(--bd);border-radius:14px;padding:20px 22px;background:#fff}
+.card h3{font-size:16.5px;font-weight:700;margin-bottom:6px}
+.card p,.card li{font-size:13.5px;color:#475569;line-height:1.5}
+.ic{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;margin-bottom:12px}
+.ic svg{width:22px;height:22px}
+.b{background:var(--p50);color:var(--p)}.gr{background:var(--g50);color:var(--g)}.or{background:var(--o50);color:var(--o)}.pu{background:var(--pu50);color:var(--pu)}.re{background:var(--r50);color:var(--r)}.te{background:var(--t50);color:var(--t)}
+ul.clean{list-style:none}
+ul.clean li{position:relative;padding-left:18px;margin:6px 0}
+ul.clean li::before{content:"";position:absolute;left:0;top:8px;width:7px;height:7px;border-radius:50%;background:var(--p)}
+.mt{margin-top:28px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);padding:10px 14px;border-bottom:2px solid var(--bd)}
+td{padding:11px 14px;border-bottom:1px solid var(--bd)}
+td b{font-weight:700}
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
+/* cover */
+.cover{background:linear-gradient(140deg,#1e3a8a 0%,#1d4ed8 45%,#0ea5e9 100%);color:#fff;padding:80px}
+.cover h1{font-size:64px;line-height:1.05;margin:28px 0 18px;max-width:900px}
+.cover .lead{color:#dbeafe;font-size:21px;max-width:760px}
+.cover .meta{position:absolute;left:80px;bottom:64px;display:flex;gap:40px;font-size:14px;color:#bfdbfe}
+.cover .meta b{display:block;color:#fff;font-size:15px;margin-top:3px}
+.blob{position:absolute;border-radius:50%;background:rgba(255,255,255,.07)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:20px}
+.brand small{display:block;font-weight:400;font-size:13px;opacity:.8}
+/* stat */
+.big{font-size:44px;font-weight:800;letter-spacing:-.02em;color:var(--p);line-height:1}
+.big-l{font-size:13.5px;color:var(--mu);margin-top:8px;line-height:1.4}
+.shot{border-radius:12px;border:1px solid var(--bd);box-shadow:0 20px 50px rgba(15,23,42,.18);display:block}
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;position:relative;margin-top:36px}
+.road::before{content:"";position:absolute;left:24px;right:24px;top:22px;height:3px;background:linear-gradient(90deg,var(--p),var(--t),var(--g),var(--pu));border-radius:3px}
+.phase .dot{width:46px;height:46px;border-radius:50%;color:#fff;font-weight:800;display:grid;place-items:center;position:relative;z-index:1;font-size:17px;border:4px solid #fff;box-shadow:0 0 0 1px var(--bd)}
+.phase .card{margin-top:16px;min-height:330px}
+.phase h3{font-size:17px}
+.phase .exit{margin-top:12px;padding-top:10px;border-top:1px dashed var(--bd);font-size:12.5px;color:var(--mu)}
+.phase .exit b{color:var(--tx)}
+/* arch */
+.layer{border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;font-size:13.5px}
+.layer .lbl{width:150px;font-weight:700;font-size:13px;flex-shrink:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:500}
+.arrow{text-align:center;color:#94a3b8;font-size:16px;line-height:1;margin:5px 0}
+.q{display:flex;gap:16px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--bd)}
+.q .n{width:34px;height:34px;border-radius:50%;background:var(--p);color:#fff;font-weight:700;display:grid;place-items:center;flex-shrink:0}
+.q b{font-size:16px;display:block}
+.q span{font-size:13.5px;color:var(--mu)}
+.std h3{display:flex;align-items:center;gap:10px}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:7px;background:#f1f5f9;color:#334155;margin:3px 4px 0 0}
+</style></head><body>
+
+<!-- 1 COVER -->
+<section class="slide cover">
+  <div class="blob" style="width:520px;height:520px;right:-140px;top:-160px"></div>
+  <div class="blob" style="width:300px;height:300px;right:160px;bottom:-140px"></div>
+  <div class="brand"><svg width="44" height="44" viewBox="0 0 40 40"><rect x="13" y="3" width="14" height="34" rx="5" fill="#fff"/><rect x="3" y="13" width="34" height="14" rx="5" fill="#bae6fd" opacity=".92"/><rect x="13" y="13" width="14" height="14" fill="#e0f2fe"/><path d="M17 20h6M20 17v6" stroke="#1d4ed8" stroke-width="2.4" stroke-linecap="round"/></svg><div>Pharmacy ERP<small>Management System</small></div></div>
+  <h1>A scalable, standards-based pharmacy platform</h1>
+  <p class="lead">Product vision, scope, architecture and roadmap: from a single counter to a national chain.</p>
+  <div class="meta"><div>Prepared by<b>Godfrey Desidery</b></div><div>Date<b>2 November 2026</b></div><div>Document<b>PRD v1.1 — Stakeholder Review</b></div></div>
+</section>
+
+<!-- 2 AGENDA -->
+<section class="slide">
+  <div class="kicker">Agenda</div><h2>What we'll cover today</h2>
+  <div class="grid g2 mt" style="gap:14px 40px">
+    <div class="q"><div class="n">1</div><div><b>The problem & opportunity</b><span>Why pharmacies need a better system</span></div></div>
+    <div class="q"><div class="n">6</div><div><b>Built to scale</b><span>Capacity targets and how we get there</span></div></div>
+    <div class="q"><div class="n">2</div><div><b>Vision & who we serve</b><span>Product promise and user personas</span></div></div>
+    <div class="q"><div class="n">7</div><div><b>Architecture</b><span>How the platform is put together</span></div></div>
+    <div class="q"><div class="n">3</div><div><b>The product & features</b><span>Prototype walkthrough, modules and feature list</span></div></div>
+    <div class="q"><div class="n">8</div><div><b>Standards & compliance</b><span>Regulatory, security and interoperability</span></div></div>
+    <div class="q"><div class="n">4</div><div><b>What makes it different</b><span>Key differentiators</span></div></div>
+    <div class="q"><div class="n">9</div><div><b>Roadmap & risks</b><span>Phased delivery and mitigations</span></div></div>
+    <div class="q"><div class="n">5</div><div><b>Goals & success metrics</b><span>How we measure success</span></div></div>
+    <div class="q"><div class="n">10</div><div><b>Decisions needed</b><span>What we need from you</span></div></div>
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 3 PROBLEM -->
+<section class="slide">
+  <div class="kicker">The problem</div><h2>Pharmacies are losing money they can't see</h2>
+  <p class="lead">Most small and mid-sized pharmacies still run on paper, spreadsheets or desktop software built for a single shop.</p>
+  <div class="grid g3 mt">
+    <div class="card"><div class="ic re"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><h3>Expired stock losses</h3><p>Batches aren't tracked, so medicines expire on the shelf unnoticed and are written off.</p></div>
+    <div class="card"><div class="ic or"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg></div><h3>Stock-outs of fast movers</h3><p>No reorder logic and no view across branches, so patients are turned away and sales are lost.</p></div>
+    <div class="card"><div class="ic pu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/></svg></div><h3>Revenue leakage</h3><p>Unrecorded sales, uncontrolled discounts and cash that doesn't reconcile at shift close.</p></div>
+    <div class="card"><div class="ic b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8"/></svg></div><h3>Slow insurance claims</h3><p>Claims are prepared by hand, are often rejected, and payment arrives weeks late.</p></div>
+    <div class="card"><div class="ic te"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>Compliance gaps</h3><p>Controlled-drug registers, prescription records and fiscal receipts are kept poorly or not at all.</p></div>
+    <div class="card"><div class="ic gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></div><h3>No business visibility</h3><p>Owners can't see profit, margins or branch performance until month end, if ever.</p></div>
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 4 VISION -->
+<section class="slide">
+  <div class="kicker">Vision</div>
+  <h2 style="font-size:38px;max-width:1000px;line-height:1.25">“One reliable system that lets any pharmacy, from a single counter to a national chain, <span style="color:var(--p)">sell faster, never lose stock to expiry, and know its numbers every day.</span>”</h2>
+  <div class="grid g3" style="margin-top:44px">
+    <div class="card" style="border-top:4px solid var(--p)"><h3>Many pharmacies</h3><p>Thousands of independent pharmacy businesses on one secure cloud platform, with each pharmacy's data fully isolated.</p></div>
+    <div class="card" style="border-top:4px solid var(--t)"><h3>Many branches</h3><p>Chains run many branches and warehouses, with stock transfers between them and combined reports.</p></div>
+    <div class="card" style="border-top:4px solid var(--g)"><h3>Growing volume</h3><p>Handles peak checkout traffic, large product catalogues and years of history without slowing down.</p></div>
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 5 PERSONAS -->
+<section class="slide">
+  <div class="kicker">Who we serve</div><h2>Built around the people who run a pharmacy</h2>
+  <table class="mt">
+    <thead><tr><th style="width:22%">Persona</th><th style="width:34%">Role</th><th>What they need from the system</th></tr></thead>
+    <tbody>
+      <tr><td><b>Owner / Admin</b></td><td>Owns one or more pharmacies</td><td>Profit visibility, branch comparison, user control, audit trail</td></tr>
+      <tr><td><b>Pharmacist</b></td><td>Licensed dispenser</td><td>Fast dispensing, prescription capture, controlled-drug register</td></tr>
+      <tr><td><b>Cashier</b></td><td>Front-counter sales</td><td>Quick search, barcode scanning, mobile money, receipts</td></tr>
+      <tr><td><b>Store Keeper</b></td><td>Receives & manages stock</td><td>Goods receiving, batch & expiry entry, stock counts, transfers</td></tr>
+      <tr><td><b>Accountant</b></td><td>Manages finances</td><td>Expenses, payables & receivables, ledger, tax reports</td></tr>
+      <tr><td><b>Branch Manager</b></td><td>Runs one branch</td><td>Branch dashboard, approvals, shift reconciliation</td></tr>
+    </tbody>
+  </table>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 6 PRODUCT DASHBOARD -->
+<section class="slide" style="background:var(--bg);padding-right:40px">
+  <div style="display:grid;grid-template-columns:330px 1fr;gap:36px;align-items:center;height:100%">
+    <div>
+      <div class="kicker">The product</div><h2>One dashboard for the whole business</h2>
+      <p class="lead" style="font-size:15.5px">Owners see sales, profit, stock health, expiry alerts and payments at a glance, for one branch or all of them.</p>
+      <ul class="clean" style="margin-top:18px;font-size:14px;color:#334155">
+        <li>KPIs compared with last month</li><li>Sales trend: 7 days, 30 days, 12 months</li><li>Top sellers & stock summary</li><li>Expiry alerts & recent transactions</li>
+      </ul>
+      <p style="font-size:12px;color:var(--mu);margin-top:18px">Screenshot from the clickable prototype (mock data).</p>
+    </div>
+    <img class="shot" src="dashboard.png" style="width:100%">
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 7 PRODUCT POS -->
+<section class="slide" style="background:var(--bg);padding-right:40px">
+  <div style="display:grid;grid-template-columns:330px 1fr;gap:36px;align-items:center;height:100%">
+    <div>
+      <div class="kicker">The product</div><h2>Checkout in under 30 seconds</h2>
+      <p class="lead" style="font-size:15.5px">A point of sale built for a busy counter, and it keeps selling when the internet drops.</p>
+      <ul class="clean" style="margin-top:18px;font-size:14px;color:#334155">
+        <li>Barcode scan or instant search</li><li>Earliest-expiring batch sold first (FEFO)</li><li>Cash, card, mobile money, insurance & split payments</li><li>Fiscal receipt issued automatically</li><li>Prescription check for Rx items</li>
+      </ul>
+    </div>
+    <img class="shot" src="pos.png" style="width:100%">
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 8 MODULES -->
+<section class="slide">
+  <div class="kicker">Scope</div><h2>Everything a pharmacy runs on, in one place</h2>
+  <div class="grid g4 mt" style="gap:14px">
+    <div class="card"><div class="ic b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h2l2.7 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L22 7H5"/></svg></div><h3>Sales & POS</h3><p>Checkout, invoices, returns, shifts, offline mode</p></div>
+    <div class="card"><div class="ic gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div><h3>Inventory</h3><p>Batches, expiry, adjustments, counts, transfers</p></div>
+    <div class="card"><div class="ic te"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg></div><h3>Purchasing</h3><p>Purchase orders, goods receiving, supplier returns, recalls</p></div>
+    <div class="card"><div class="ic or"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><h3>Customers & Insurance</h3><p>Profiles, credit, insurance schemes, claims</p></div>
+    <div class="card"><div class="ic pu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2M15 18H9M19 18h2a1 1 0 0 0 1-1v-3.6L18.5 9H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></div><h3>Suppliers</h3><p>Terms, statements, payables ageing</p></div>
+    <div class="card"><div class="ic re"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></div><h3>Accounting</h3><p>Expenses, payments, double-entry ledger</p></div>
+    <div class="card"><div class="ic b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg></div><h3>Reports</h3><p>Sales, stock, P&L, expiry, tax; PDF/Excel export</p></div>
+    <div class="card"><div class="ic gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>Users, Roles & Settings</h3><p>Role-based access, branches, audit log</p></div>
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- FEATURES 1 -->
+<section class="slide" style="padding-top:52px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end"><div><div class="kicker">Features &middot; 1 of 3</div><h2 style="margin-bottom:0">Selling, stock &amp; purchasing</h2></div>
+  <div class="legend"><span class="pr p0">Launch</span> Required for launch <span class="pr p1">Soon after</span> Soon after launch <span class="pr p2">Later</span> Later</div></div>
+  <div class="grid g3" style="margin-top:20px;gap:16px"><div class="card fcard"><h3><span class="ic b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h2l2.7 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L22 7H5"/></svg></span>Sales &amp; Point of Sale</h3><ul class="feat"><li><span>Search by name, generic or batch, plus barcode scan</span><span class="pr p0">Launch</span></li><li><span>Earliest-expiring batch picked automatically (FEFO)</span><span class="pr p0">Launch</span></li><li><span>Cash, card, mobile money, insurance, split payments</span><span class="pr p0">Launch</span></li><li><span>Discounts limited by role; tax calculated</span><span class="pr p0">Launch</span></li><li><span>Fiscal receipts (e.g. TRA VFD)</span><span class="pr p0">Launch</span></li><li><span>Prescription capture for Rx items</span><span class="pr p0">Launch</span></li><li><span>Offline selling with safe sync</span><span class="pr p0">Launch</span></li><li><span>Shift open/close, X &amp; Z reports</span><span class="pr p0">Launch</span></li><li><span>Returns against the original invoice</span><span class="pr p0">Launch</span></li><li><span>Hold &amp; recall sales</span><span class="pr p1">Soon after</span></li><li><span>Loyalty points</span><span class="pr p2">Later</span></li></ul></div><div class="card fcard"><h3><span class="ic gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></span>Inventory</h3><ul class="feat"><li><span>Stock by product &rarr; batch &rarr; location</span><span class="pr p0">Launch</span></li><li><span>Reorder levels &amp; low-stock alerts</span><span class="pr p0">Launch</span></li><li><span>Expiry buckets, alerts &amp; write-off</span><span class="pr p0">Launch</span></li><li><span>Adjustments with reason &amp; approval</span><span class="pr p0">Launch</span></li><li><span>Transfers between branches with tracking</span><span class="pr p0">Launch</span></li><li><span>Unalterable stock movement history</span><span class="pr p0">Launch</span></li><li><span>Full &amp; cycle stock counts</span><span class="pr p1">Soon after</span></li><li><span>Box &rarr; strip &rarr; tablet units</span><span class="pr p1">Soon after</span></li><li><span>Controlled-drug register</span><span class="pr p1">Soon after</span></li><li><span>Suggested reorder quantities</span><span class="pr p2">Later</span></li></ul></div><div class="card fcard"><h3><span class="ic te"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg></span>Purchasing</h3><ul class="feat"><li><span>Purchase orders with approval workflow</span><span class="pr p0">Launch</span></li><li><span>Goods receiving with batch &amp; expiry</span><span class="pr p0">Launch</span></li><li><span>Partial deliveries</span><span class="pr p0">Launch</span></li><li><span>Returns to supplier &amp; credit notes</span><span class="pr p0">Launch</span></li><li><span>Purchase order / receipt / invoice matching</span><span class="pr p1">Soon after</span></li><li><span>Email or PDF purchase orders to suppliers</span><span class="pr p1">Soon after</span></li><li><span>Recall handling: affected batches blocked from sale</span><span class="pr p1">Soon after</span></li></ul></div></div>
+  <div class="foot"><span><b>Pharmacy ERP</b> &middot; Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+<!-- FEATURES 2 -->
+<section class="slide" style="padding-top:52px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end"><div><div class="kicker">Features &middot; 2 of 3</div><h2 style="margin-bottom:0">Customers, money &amp; insight</h2></div>
+  <div class="legend"><span class="pr p0">Launch</span> Required for launch <span class="pr p1">Soon after</span> Soon after launch <span class="pr p2">Later</span> Later</div></div>
+  <div class="grid g3" style="margin-top:20px;gap:16px"><div class="card fcard"><h3><span class="ic or"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>Customers, Insurance &amp; Suppliers</h3><ul class="feat"><li><span>Customer profiles, credit limits &amp; balances</span><span class="pr p0">Launch</span></li><li><span>Purchase &amp; dispensing history</span><span class="pr p0">Launch</span></li><li><span>Supplier profiles, terms &amp; statements</span><span class="pr p0">Launch</span></li><li><span>Ageing of supplier payables</span><span class="pr p0">Launch</span></li><li><span>Insurance schemes &amp; copay rules (e.g. NHIF)</span><span class="pr p1">Soon after</span></li><li><span>Claim batches &amp; status tracking</span><span class="pr p1">Soon after</span></li><li><span>Statements &amp; overdue reminders by SMS or email</span><span class="pr p1">Soon after</span></li><li><span>Supplier performance scoring</span><span class="pr p2">Later</span></li></ul></div><div class="card fcard"><h3><span class="ic re"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></span>Accounting</h3><ul class="feat"><li><span>Expenses by category with approval</span><span class="pr p0">Launch</span></li><li><span>Payments in &amp; out, matched to invoices</span><span class="pr p0">Launch</span></li><li><span>Double-entry ledger, posted automatically</span><span class="pr p0">Launch</span></li><li><span>Editable chart of accounts</span><span class="pr p0">Launch</span></li><li><span>Cash, bank &amp; mobile-money reconciliation</span><span class="pr p1">Soon after</span></li><li><span>Period close; corrections by reversal only</span><span class="pr p1">Soon after</span></li><li><span>QuickBooks / Xero export</span><span class="pr p2">Later</span></li></ul></div><div class="card fcard"><h3><span class="ic b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg></span>Dashboard &amp; Reports</h3><ul class="feat"><li><span>KPI dashboard filtered by branch</span><span class="pr p0">Launch</span></li><li><span>Sales, purchase &amp; stock reports</span><span class="pr p0">Launch</span></li><li><span>Profit &amp; loss and margins</span><span class="pr p0">Launch</span></li><li><span>Expiry, write-off &amp; tax reports</span><span class="pr p0">Launch</span></li><li><span>PDF and Excel export</span><span class="pr p0">Launch</span></li><li><span>Large reports run in the background</span><span class="pr p0">Launch</span></li><li><span>Daily summary sent by email</span><span class="pr p1">Soon after</span></li></ul></div></div>
+  <div class="foot"><span><b>Pharmacy ERP</b> &middot; Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+<!-- FEATURES 3 -->
+<section class="slide" style="padding-top:52px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end"><div><div class="kicker">Features &middot; 3 of 3</div><h2 style="margin-bottom:0">Data, security &amp; platform</h2></div>
+  <div class="legend"><span class="pr p0">Launch</span> Required for launch <span class="pr p1">Soon after</span> Soon after launch <span class="pr p2">Later</span> Later</div></div>
+  <div class="grid g3" style="margin-top:20px;gap:16px"><div class="card fcard"><h3><span class="ic te"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"/></svg></span>Master Data</h3><ul class="feat"><li><span>Medicines with ATC code, GS1 barcode, Rx class</span><span class="pr p0">Launch</span></li><li><span>Categories, units, dosage forms, manufacturers</span><span class="pr p0">Launch</span></li><li><span>Bulk import / export with validation</span><span class="pr p0">Launch</span></li><li><span>2D GS1 DataMatrix scanning</span><span class="pr p1">Soon after</span></li><li><span>Shared drug catalogue to start from</span><span class="pr p1">Soon after</span></li><li><span>Drug interaction &amp; allergy warnings</span><span class="pr p2">Later</span></li></ul></div><div class="card fcard"><h3><span class="ic gr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>Access &amp; Security</h3><ul class="feat"><li><span>Roles &amp; permissions per module and action</span><span class="pr p0">Launch</span></li><li><span>Default roles plus custom roles</span><span class="pr p0">Launch</span></li><li><span>Users limited to their branches</span><span class="pr p0">Launch</span></li><li><span>Session timeout &amp; forced logout</span><span class="pr p0">Launch</span></li><li><span>Each pharmacy&rsquo;s data isolated</span><span class="pr p0">Launch</span></li><li><span>Audit log of sensitive actions</span><span class="pr p0">Launch</span></li><li><span>Two-factor authentication</span><span class="pr p1">Soon after</span></li><li><span>PIN switch on shared tills</span><span class="pr p1">Soon after</span></li><li><span>Enterprise single sign-on</span><span class="pr p2">Later</span></li></ul></div><div class="card fcard"><h3><span class="ic pu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></svg></span>Settings &amp; Platform</h3><ul class="feat"><li><span>Pharmacy profile, branches, currency, time zone</span><span class="pr p0">Launch</span></li><li><span>Invoice numbering, tax &amp; receipt layout</span><span class="pr p0">Launch</span></li><li><span>Self-service sign-up wizard</span><span class="pr p0">Launch</span></li><li><span>Notification preferences</span><span class="pr p1">Soon after</span></li><li><span>Subscription plans &amp; billing</span><span class="pr p1">Soon after</span></li><li><span>Operator console &amp; support tools</span><span class="pr p1">Soon after</span></li><li><span>Full data export for each pharmacy</span><span class="pr p1">Soon after</span></li></ul></div></div>
+  <div class="foot"><span><b>Pharmacy ERP</b> &middot; Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+<!-- 9 DIFFERENTIATORS -->
+<section class="slide">
+  <div class="kicker">Why us</div><h2>What makes it different</h2>
+  <div class="grid g3 mt">
+    <div class="card"><h3 style="color:var(--p)">Works offline</h3><p>The counter keeps selling during internet outages and syncs safely afterwards: no lost or duplicated sales.</p></div>
+    <div class="card"><h3 style="color:var(--g)">Expiry control built in</h3><p>Every unit is tracked by batch. The earliest expiry sells first, alerts go out at 90, 60 and 30 days, and expired stock can't be sold.</p></div>
+    <div class="card"><h3 style="color:var(--o)">Tax-compliant receipts</h3><p>Fiscal receipts issued automatically through the tax authority (e.g. TRA VFD), with a plug-in for each new country.</p></div>
+    <div class="card"><h3 style="color:var(--pu)">Mobile money native</h3><p>M-Pesa, Tigo Pesa and Airtel Money at the counter, alongside cash, card and insurance.</p></div>
+    <div class="card"><h3 style="color:var(--t)">Insurance claims</h3><p>Copay rules, claim batches and status tracking to cut rejections and get paid faster.</p></div>
+    <div class="card"><h3 style="color:var(--r)">Audit-ready</h3><p>Records can't be altered, controlled-drug registers are kept, and every sensitive action is logged.</p></div>
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 10 METRICS -->
+<section class="slide">
+  <div class="kicker">Goals & success metrics</div><h2>How we'll measure success</h2>
+  <p class="lead">Targets 12 months after launch.</p>
+  <div class="grid g4 mt" style="gap:16px">
+    <div class="card"><div class="big">&lt;30s</div><div class="big-l">Median checkout time at the counter</div></div>
+    <div class="card"><div class="big" style="color:var(--g)">−50%</div><div class="big-l">Value of expired stock written off vs. baseline</div></div>
+    <div class="card"><div class="big" style="color:var(--o)">&lt;2%</div><div class="big-l">Stock-out rate on the top-100 products</div></div>
+    <div class="card"><div class="big" style="color:var(--pu)">&lt;0.5%</div><div class="big-l">Daily cash variance as a share of sales</div></div>
+    <div class="card"><div class="big" style="color:var(--t)">500</div><div class="big-l">Active pharmacy businesses</div></div>
+    <div class="card"><div class="big" style="color:var(--t)">1,500</div><div class="big-l">Active branches</div></div>
+    <div class="card"><div class="big">99.9%</div><div class="big-l">Monthly platform uptime</div></div>
+    <div class="card"><div class="big" style="color:var(--g)">≥40</div><div class="big-l">Customer Net Promoter Score</div></div>
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 11 SCALE -->
+<section class="slide">
+  <div class="kicker">Built to scale</div><h2>Designed for 20× growth without a rewrite</h2>
+  <div style="display:grid;grid-template-columns:1.05fr 1fr;gap:36px;margin-top:22px">
+    <table>
+      <thead><tr><th>Dimension</th><th>Launch target</th><th>Designed for</th></tr></thead>
+      <tbody>
+        <tr><td>Pharmacy businesses</td><td><b>500</b></td><td><b style="color:var(--p)">10,000</b></td></tr>
+        <tr><td>Branches</td><td><b>1,500</b></td><td><b style="color:var(--p)">30,000</b></td></tr>
+        <tr><td>Concurrent POS terminals</td><td><b>3,000</b></td><td><b style="color:var(--p)">50,000</b></td></tr>
+        <tr><td>Sales per day</td><td><b>500K</b></td><td><b style="color:var(--p)">10M</b></td></tr>
+        <tr><td>Products per pharmacy</td><td><b>20K</b></td><td><b style="color:var(--p)">200K</b></td></tr>
+        <tr><td>Checkout response (p95)</td><td colspan="2"><b>&lt; 300 ms</b></td></tr>
+      </tbody>
+    </table>
+    <div>
+      <h3 style="font-size:17px;margin-bottom:10px">How we get there</h3>
+      <ul class="clean" style="font-size:14px;color:#334155;line-height:1.5">
+        <li><b>Add servers, not rewrites:</b> stateless services that autoscale across zones</li>
+        <li><b>Database growth path:</b> read replicas, monthly partitions, then splitting pharmacies across clusters</li>
+        <li><b>Heavy work off the counter:</b> receipts, SMS, reports and claims run in the background</li>
+        <li><b>Reports never slow sales:</b> a separate analytics store</li>
+        <li><b>Fair use:</b> per-pharmacy limits so no one slows down the rest</li>
+        <li><b>Proven before release:</b> load-tested at 2× peak, and a release is blocked if speed regresses</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 12 ARCHITECTURE -->
+<section class="slide">
+  <div class="kicker">Architecture</div><h2>A modular cloud platform</h2>
+  <p class="lead" style="font-size:15px">Start with one well-structured application. Split modules into separate services only when scale demands it.</p>
+  <div style="margin-top:20px">
+    <div class="layer" style="background:var(--p50)"><span class="lbl" style="color:var(--p)">Clients</span><div class="chips"><span class="chip">Web app</span><span class="chip">POS (works offline)</span><span class="chip">Mobile</span><span class="chip">Partner API (REST + FHIR)</span></div></div>
+    <div class="arrow">▼</div>
+    <div class="layer" style="background:#f1f5f9"><span class="lbl">Gateway</span><div class="chips"><span class="chip">Authentication</span><span class="chip">Rate limiting</span><span class="chip">Pharmacy routing</span></div></div>
+    <div class="arrow">▼</div>
+    <div class="layer" style="background:var(--g50)"><span class="lbl" style="color:var(--g)">Core modules</span><div class="chips"><span class="chip">Identity</span><span class="chip">Catalogue</span><span class="chip">Sales / POS</span><span class="chip">Inventory</span><span class="chip">Purchasing</span><span class="chip">Customers</span><span class="chip">Accounting</span><span class="chip">Settings</span></div></div>
+    <div class="arrow">▼</div>
+    <div class="grid g2" style="gap:12px">
+      <div class="layer" style="background:var(--o50)"><span class="lbl" style="color:var(--o);width:110px">Data</span><div class="chips"><span class="chip">PostgreSQL + replicas</span><span class="chip">Redis cache</span><span class="chip">File storage</span><span class="chip">Analytics store</span></div></div>
+      <div class="layer" style="background:var(--pu50)"><span class="lbl" style="color:var(--pu);width:110px">Background</span><div class="chips"><span class="chip">Fiscal receipts</span><span class="chip">SMS / Email</span><span class="chip">Reports</span><span class="chip">Claims</span><span class="chip">Offline sync</span></div></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 13 STANDARDS -->
+<section class="slide">
+  <div class="kicker">Standards & compliance</div><h2>Built on recognised standards</h2>
+  <div class="grid g3" style="margin-top:22px;gap:14px">
+    <div class="card std"><h3><span class="ic gr" style="margin:0;width:32px;height:32px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/></svg></span>Pharmacy & regulatory</h3><span class="tag">WHO/FIP Good Pharmacy Practice</span><span class="tag">GDP / GSP</span><span class="tag">TMDA & Pharmacy Council</span><span class="tag">WHO ATC</span><span class="tag">WHO INN</span></div>
+    <div class="card std"><h3><span class="ic b" style="margin:0;width:32px;height:32px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></svg></span>Traceability</h3><span class="tag">GS1 GTIN barcodes</span><span class="tag">GS1 DataMatrix</span><span class="tag">GS1 EPCIS 2.0</span></div>
+    <div class="card std"><h3><span class="ic te" style="margin:0;width:32px;height:32px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>Health data</h3><span class="tag">HL7 FHIR R4</span><span class="tag">ICD-10 / ICD-11</span><span class="tag">NHIF claim formats</span></div>
+    <div class="card std"><h3><span class="ic re" style="margin:0;width:32px;height:32px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>Security</h3><span class="tag">ISO 27001 / 27701</span><span class="tag">SOC 2 Type II</span><span class="tag">OWASP ASVS L2</span><span class="tag">OAuth 2.1 / OIDC</span><span class="tag">NIST 800-63B</span><span class="tag">PCI DSS v4.0</span></div>
+    <div class="card std"><h3><span class="ic pu" style="margin:0;width:32px;height:32px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>Privacy & integrity</h3><span class="tag">Tanzania PDPA 2022</span><span class="tag">Kenya DPA 2019</span><span class="tag">GDPR</span><span class="tag">ALCOA+ data integrity</span></div>
+    <div class="card std"><h3><span class="ic or" style="margin:0;width:32px;height:32px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/></svg></span>Finance & engineering</h3><span class="tag">IFRS for SMEs</span><span class="tag">TRA VFD / EFD</span><span class="tag">ISO 4217</span><span class="tag">OpenAPI 3.1</span><span class="tag">ISO 8601</span><span class="tag">WCAG 2.1 AA</span><span class="tag">OpenTelemetry</span></div>
+  </div>
+  <p style="font-size:13px;color:var(--mu);margin-top:16px">A compliance checklist links each standard to requirements, tests and evidence, with automated checks every release and an annual external penetration test.</p>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 14 ROADMAP -->
+<section class="slide">
+  <div class="kicker">Roadmap</div><h2>Phased delivery, each phase proven in the field</h2>
+  <div class="road">
+    <div class="phase"><div class="dot" style="background:var(--p)">1</div><div class="card"><h3>MVP</h3><ul class="clean"><li>Login & roles</li><li>Medicines catalogue</li><li>Online POS</li><li>Batches, FEFO & expiry</li><li>Purchasing & receiving</li><li>Customers & suppliers</li><li>Core reports</li></ul><div class="exit"><b>Exit:</b> 5 pilot pharmacies trading daily for 4 weeks</div></div></div>
+    <div class="phase"><div class="dot" style="background:var(--t)">2</div><div class="card"><h3>Scale & comply</h3><ul class="clean"><li>Offline POS</li><li>Fiscal receipts</li><li>Mobile money</li><li>Shifts & cash-up</li><li>Branch transfers</li><li>General ledger & audit log</li><li>Self-service sign-up</li></ul><div class="exit"><b>Exit:</b> 50 pharmacies live, 99.9% uptime for 30 days</div></div></div>
+    <div class="phase"><div class="dot" style="background:var(--g)">3</div><div class="card"><h3>Grow</h3><ul class="clean"><li>Insurance claims</li><li>Controlled-drug register</li><li>Stock counts</li><li>Scheduled reports</li><li>Public API</li><li>Subscription billing</li></ul><div class="exit"><b>Exit:</b> 500 pharmacies, claim rejection rate &lt;10%</div></div></div>
+    <div class="phase"><div class="dot" style="background:var(--pu)">4</div><div class="card"><h3>Expand</h3><ul class="clean"><li>Reorder suggestions</li><li>Drug interaction checks</li><li>Enterprise single sign-on</li><li>Analytics warehouse</li><li>E-commerce APIs</li><li>New countries</li></ul><div class="exit"><b>Exit:</b> set at Phase 3 review</div></div></div>
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 15 RISKS -->
+<section class="slide">
+  <div class="kicker">Risks</div><h2>Key risks and how we manage them</h2>
+  <table class="mt">
+    <thead><tr><th style="width:34%">Risk</th><th style="width:16%">Impact</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td><b>Unreliable internet at branches</b></td><td><span class="pill" style="background:var(--r50);color:var(--r)">High</span></td><td>Offline-first POS with safe sync</td></tr>
+      <tr><td><b>Fiscal & regulatory rules differ by country</b></td><td><span class="pill" style="background:var(--o50);color:var(--o)">Medium</span></td><td>Plug-in country adapters; compliance review per market</td></tr>
+      <tr><td><b>Poor product data (duplicates, typos)</b></td><td><span class="pill" style="background:var(--o50);color:var(--o)">Medium</span></td><td>Shared drug catalogue, import validation, duplicate detection</td></tr>
+      <tr><td><b>Data leak between pharmacies</b></td><td><span class="pill" style="background:var(--r50);color:var(--r)">High</span></td><td>Database-enforced isolation, automated tests, penetration tests</td></tr>
+      <tr><td><b>Reporting load slows checkout</b></td><td><span class="pill" style="background:var(--o50);color:var(--o)">Medium</span></td><td>Read replicas and a separate analytics store</td></tr>
+      <tr><td><b>Staff resist change</b></td><td><span class="pill" style="background:var(--o50);color:var(--o)">Medium</span></td><td>Simple UI, Swahili localisation, onboarding & training</td></tr>
+    </tbody>
+  </table>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 16 DECISIONS -->
+<section class="slide">
+  <div class="kicker">Decisions needed</div><h2>What we need from stakeholders</h2>
+  <div style="margin-top:18px;max-width:1000px">
+    <div class="q"><div class="n">1</div><div><b>Target markets after Tanzania</b><span>Decides which fiscal and insurance integrations come first.</span></div></div>
+    <div class="q"><div class="n">2</div><div><b>Pricing model</b><span>Per branch, per terminal, or tiered by transaction volume.</span></div></div>
+    <div class="q"><div class="n">3</div><div><b>Hosting options</b><span>SaaS only, or also on-premise for large chains.</span></div></div>
+    <div class="q"><div class="n">4</div><div><b>Drug information licence</b><span>Which licensed database to use for interaction and allergy checks, and its budget.</span></div></div>
+    <div class="q"><div class="n">5</div><div><b>Wholesale scope in v1</b><span>Price lists, credit terms and delivery notes now or later.</span></div></div>
+  </div>
+  <div class="foot"><span><b>Pharmacy ERP</b> · Stakeholder Presentation</span><span class="pg"></span></div>
+</section>
+
+<!-- 17 NEXT STEPS -->
+<section class="slide cover" style="padding:80px">
+  <div class="blob" style="width:520px;height:520px;right:-160px;bottom:-200px"></div>
+  <div class="kicker" style="color:#bfdbfe">Next steps</div>
+  <h1 style="font-size:48px;margin:6px 0 34px">Let's move to MVP</h1>
+  <div class="grid g3" style="max-width:1050px">
+    <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:22px"><div style="font-size:28px;font-weight:800">01</div><div style="font-weight:700;font-size:17px;margin:6px 0">Approve the PRD</div><div style="color:#dbeafe;font-size:14px">Sign off on scope, priorities and success metrics.</div></div>
+    <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:22px"><div style="font-size:28px;font-weight:800">02</div><div style="font-weight:700;font-size:17px;margin:6px 0">Resolve open decisions</div><div style="color:#dbeafe;font-size:14px">Markets, pricing, hosting, drug database and wholesale scope.</div></div>
+    <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:22px"><div style="font-size:28px;font-weight:800">03</div><div style="font-weight:700;font-size:17px;margin:6px 0">Select pilot pharmacies</div><div style="color:#dbeafe;font-size:14px">Five pilot sites to validate the MVP in daily trading.</div></div>
+  </div>
+  <div class="meta"><div>Contact<b>Godfrey Desidery</b></div><div>Reference documents<b>PRD v1.1 · Clickable UI prototype</b></div></div>
+</section>
+
+</body></html>

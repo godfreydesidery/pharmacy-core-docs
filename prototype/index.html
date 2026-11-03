@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pharmacy Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f7fb;--surface:#fff;--border:#e8ecf3;--text:#1e293b;--muted:#64748b;--faint:#94a3b8;
+  --primary:#2463eb;--primary-50:#eef4ff;--primary-100:#dbe7ff;
+  --green:#16a34a;--green-50:#ecfdf3;--orange:#f97316;--orange-50:#fff4ec;
+  --purple:#7c3aed;--purple-50:#f4efff;--red:#ef4444;--red-50:#fef1f1;
+  --amber:#d97706;--amber-50:#fffbeb;--teal:#0891b2;--teal-50:#ecfeff;
+  --radius:12px;--shadow:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.45}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+.ic{flex-shrink:0;vertical-align:middle}
+
+/* ---------- layout ---------- */
+.app{display:flex;min-height:100vh}
+.sidebar{width:248px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:40;transition:width .2s,transform .2s}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 20px;height:68px}
+.brand-text b{display:block;font-size:17px;font-weight:700;line-height:1.1}
+.brand-text small{color:var(--muted);font-size:11px}
+.nav{flex:1;overflow-y:auto;padding:8px 12px}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:9px;border:0;background:none;cursor:pointer;color:#334155;font-weight:500;font-size:13.5px;text-align:left}
+.nav-item:hover{background:#f3f6fb}
+.nav-item.active{background:var(--primary-100);color:var(--primary)}
+.nav-item .chev{margin-left:auto;transition:transform .2s;color:var(--faint)}
+.nav-group.open>.nav-item .chev{transform:rotate(180deg)}
+.submenu{display:none;padding:2px 0 6px 42px}
+.nav-group.open .submenu{display:block}
+.submenu a{display:block;padding:7px 10px;border-radius:7px;color:var(--muted);font-size:13px}
+.submenu a:hover{color:var(--text);background:#f6f8fc}
+.submenu a.active{color:var(--primary);font-weight:600;background:var(--primary-50)}
+.promo{margin:12px;border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.promo b{display:block;color:var(--primary);margin-top:6px}
+.promo small{color:var(--muted);font-size:11px;line-height:1.5;display:block}
+.main{flex:1;margin-left:248px;min-width:0;transition:margin .2s}
+.topbar{height:68px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:30}
+.topbar .spacer{flex:1}
+.global-search{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:9px;padding:0 12px;height:40px;width:360px;max-width:40vw;color:var(--faint)}
+.global-search input{border:0;outline:0;flex:1;background:none;font-size:13px}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:0;background:none;display:grid;place-items:center;cursor:pointer;color:#475569;position:relative}
+.icon-btn:hover{background:#f1f4f9}
+.dot{position:absolute;top:6px;right:7px;min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#2463eb,#16a34a);color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px}
+.user-chip{display:flex;align-items:center;gap:10px;cursor:pointer;border:0;background:none;padding:4px;border-radius:10px}
+.user-chip:hover{background:#f1f4f9}
+.user-chip .who{text-align:left;line-height:1.2}
+.user-chip .who b{font-size:13px;display:block}
+.user-chip .who small{color:var(--muted);font-size:11px}
+.dropdown{position:absolute;right:0;top:calc(100% + 8px);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.12);min-width:220px;padding:6px;display:none;z-index:50}
+.dropdown.show{display:block}
+.dropdown a,.dropdown button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:8px;border:0;background:none;cursor:pointer;font-size:13px;text-align:left}
+.dropdown a:hover,.dropdown button:hover{background:#f3f6fb}
+.notif{width:320px}
+.notif-item{display:flex;gap:10px;padding:10px;border-radius:8px}
+.notif-item:hover{background:#f6f8fc}
+.notif-item p{font-size:12.5px}
+.notif-item small{color:var(--faint);font-size:11px}
+.rel{position:relative}
+.content{padding:24px}
+.overlay{display:none}
+
+body.collapsed .sidebar{width:76px}
+body.collapsed .main{margin-left:76px}
+body.collapsed .brand-text,body.collapsed .nav-label,body.collapsed .chev,body.collapsed .submenu,body.collapsed .promo{display:none!important}
+body.collapsed .nav-item{justify-content:center}
+
+/* ---------- common ---------- */
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.page-head h1{font-size:22px;font-weight:700}
+.crumbs{color:var(--faint);font-size:12.5px;margin-top:2px}
+.crumbs span{color:var(--muted)}
+.head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:9px;border:1px solid transparent;cursor:pointer;font-weight:500;font-size:13px;white-space:nowrap}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:#1d55d4}
+.btn-light{background:var(--surface);border-color:var(--border);color:#334155}
+.btn-light:hover{background:#f6f8fc}
+.btn-success{background:var(--green);color:#fff}
+.btn-danger{background:var(--red);color:#fff}
+.btn-sm{height:32px;padding:0 10px;font-size:12.5px}
+.btn-block{width:100%;justify-content:center}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-pad{padding:18px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px 18px 6px}
+.card-head h3{font-size:14.5px;font-weight:600}
+.link{color:var(--primary);font-size:12.5px;font-weight:500}
+.muted{color:var(--muted)}.faint{color:var(--faint)}
+.t-right{text-align:right!important}.t-center{text-align:center!important}
+.fw6{font-weight:600}
+.select,.input{height:38px;border:1px solid var(--border);border-radius:9px;padding:0 12px;background:var(--surface);outline:0;font-size:13px}
+.select:focus,.input:focus,textarea.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-50)}
+textarea.input{height:auto;padding:10px 12px;resize:vertical;min-height:80px}
+.select-sm{height:30px;font-size:12px;padding:0 8px}
+
+.grid-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:18px}
+.grid-stats.c4{grid-template-columns:repeat(4,1fr)}
+.stat{display:flex;gap:14px;padding:18px;align-items:center}
+.stat-icon{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
+.stat small{color:var(--muted);font-size:12px}
+.stat .val{font-size:20px;font-weight:700;margin:2px 0}
+.delta{font-size:11.5px;color:var(--green);font-weight:500}
+.delta.down{color:var(--red)}
+.delta span{color:var(--faint);font-weight:400}
+
+.tone-blue{background:var(--primary-50);color:var(--primary)}
+.tone-green{background:var(--green-50);color:var(--green)}
+.tone-purple{background:var(--purple-50);color:var(--purple)}
+.tone-orange{background:var(--orange-50);color:var(--orange)}
+.tone-red{background:var(--red-50);color:var(--red)}
+.tone-teal{background:var(--teal-50);color:var(--teal)}
+.tone-amber{background:var(--amber-50);color:var(--amber)}
+
+.grid-dash{display:grid;grid-template-columns:1.55fr 1.2fr 1fr;gap:16px;margin-bottom:18px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-21{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:18px}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-green{background:var(--green-50);color:var(--green)}
+.b-amber{background:var(--amber-50);color:var(--amber)}
+.b-red{background:var(--red-50);color:var(--red)}
+.b-blue{background:var(--primary-50);color:var(--primary)}
+.b-gray{background:#f1f5f9;color:var(--muted)}
+.b-purple{background:var(--purple-50);color:var(--purple)}
+
+/* tables */
+.table-wrap{overflow-x:auto}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;padding:11px 16px;background:#f8fafd;border-bottom:1px solid var(--border);white-space:nowrap}
+.table td{padding:12px 16px;border-bottom:1px solid #f0f3f8;white-space:nowrap}
+.table tbody tr:hover{background:#fafbfe}
+.table.compact th,.table.compact td{padding:9px 12px}
+.table.plain th{background:none}
+.cell-main{display:flex;align-items:center;gap:10px}
+.cell-main .thumb{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
+.cell-main b{font-weight:600;display:block}
+.cell-main small{color:var(--faint);font-size:11.5px}
+.row-actions{display:inline-flex;gap:4px}
+.row-actions button{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:grid;place-items:center;color:var(--muted)}
+.row-actions button:hover{color:var(--primary);border-color:var(--primary-100);background:var(--primary-50)}
+.row-actions button.del:hover{color:var(--red);border-color:#fecaca;background:var(--red-50)}
+.toolbar{display:flex;gap:10px;padding:14px 16px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border)}
+.toolbar .spacer{flex:1}
+.search-input{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:9px;padding:0 12px;height:38px;width:280px;color:var(--faint)}
+.search-input input{border:0;outline:0;flex:1;background:none;font-size:13px;min-width:0}
+.table-foot{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;color:var(--muted);font-size:12.5px;flex-wrap:wrap;gap:10px}
+.pager{display:flex;gap:4px}
+.pager button{min-width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12.5px}
+.pager button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* dashboard bits */
+.mini-list .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f1f4f8;font-size:12.5px}
+.mini-list .row:last-child{border-bottom:0}
+.mini-list .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.left-tag{font-size:11px;font-weight:600;text-align:right;line-height:1.1;min-width:34px}
+.chart-box{position:relative;padding:4px 14px 12px}
+.tooltip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11.5px;box-shadow:0 6px 18px rgba(15,23,42,.1);white-space:nowrap;display:none;z-index:2}
+.donut-wrap{display:flex;align-items:center;gap:16px;padding:6px 18px 18px}
+.legend{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:12px;flex:1}
+.legend li{display:flex;align-items:center;gap:8px}
+.legend i{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.legend b{margin-left:auto;font-weight:600}
+.legend-inline{display:flex;gap:16px;font-size:12px;color:var(--muted)}
+.legend-inline span{display:flex;align-items:center;gap:6px}
+.legend-inline i{width:10px;height:10px;border-radius:3px}
+.summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;padding:6px 18px 18px}
+.sum-tile{border-radius:10px;padding:16px;display:flex;gap:12px;align-items:center}
+.sum-tile .stat-icon{width:40px;height:40px;background:#fff}
+.sum-tile small{font-size:11.5px;color:var(--muted)}
+.sum-tile b{display:block;font-size:17px}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
+.tabs a,.tabs button{padding:13px 14px;border:0;background:none;cursor:pointer;color:var(--muted);font-weight:500;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs .on{color:var(--primary);border-color:var(--primary)}
+.panel{display:none}.panel.on{display:block}
+
+/* forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+.form-grid .full{grid-column:1/-1}
+.field label{display:block;font-size:12.5px;font-weight:500;margin-bottom:6px;color:#334155}
+.field .input,.field .select{width:100%}
+.switch{position:relative;width:40px;height:22px;flex-shrink:0;display:inline-block}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#cbd5e1;border-radius:22px;cursor:pointer;transition:.2s}
+.switch span::before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked+span{background:var(--primary)}
+.switch input:checked+span::before{transform:translateX(18px)}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #f1f4f8}
+.setting-row:last-child{border-bottom:0}
+.setting-row small{display:block;color:var(--muted);font-size:12px}
+
+/* modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:flex-start;justify-content:center;padding:6vh 16px;z-index:100;overflow-y:auto}
+.modal-backdrop.show{display:flex}
+.modal{background:var(--surface);border-radius:14px;width:100%;max-width:620px;box-shadow:0 24px 60px rgba(15,23,42,.25)}
+.modal.wide{max-width:860px}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal-head h3{font-size:16px}
+.modal-body{padding:20px}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px}
+.detail-grid dt{font-size:12px;color:var(--muted)}
+.detail-grid dd{font-weight:500;margin-top:2px}
+
+.toasts{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:8px;z-index:200}
+.toast{display:flex;align-items:center;gap:10px;background:#0f172a;color:#fff;padding:12px 16px;border-radius:10px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.2);animation:tin .25s ease}
+.toast.err .ic{color:#f87171}.toast .ic{color:#4ade80}
+@keyframes tin{from{transform:translateY(10px);opacity:0}}
+
+/* POS */
+.pos{display:grid;grid-template-columns:1fr 390px;gap:16px;align-items:start}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 14px}
+.chip{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12.5px;font-weight:500;color:var(--muted)}
+.chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;padding:16px;max-height:calc(100vh - 290px);overflow-y:auto}
+.prod{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px;transition:.15s}
+.prod:hover{border-color:var(--primary);box-shadow:0 4px 14px rgba(36,99,235,.12)}
+.prod:disabled{opacity:.5;cursor:not-allowed}
+.prod b{font-size:13px;line-height:1.3}
+.prod small{color:var(--faint);font-size:11.5px}
+.prod .price{font-weight:700;color:var(--primary);font-size:15px}
+.prod-top{display:flex;justify-content:space-between;align-items:center}
+.cart-items{max-height:300px;overflow-y:auto;padding:0 16px}
+.cart-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f4f8}
+.cart-row .grow{flex:1;min-width:0}
+.cart-row b{font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cart-row small{color:var(--faint);font-size:11.5px}
+.qty{display:flex;align-items:center;border:1px solid var(--border);border-radius:8px}
+.qty button{width:26px;height:26px;border:0;background:none;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
+.qty span{min-width:24px;text-align:center;font-weight:600;font-size:12.5px}
+.totals{padding:12px 16px;border-top:1px solid var(--border);font-size:13px}
+.totals .r{display:flex;justify-content:space-between;padding:4px 0}
+.totals .grand{font-size:18px;font-weight:700;padding-top:10px;margin-top:6px;border-top:1px dashed var(--border)}
+.pay-methods{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 16px 12px}
+.pay-methods button{border:1px solid var(--border);border-radius:9px;background:var(--surface);padding:8px 4px;cursor:pointer;font-size:11.5px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted)}
+.pay-methods button.on{border-color:var(--primary);color:var(--primary);background:var(--primary-50)}
+.empty{text-align:center;color:var(--faint);padding:30px 10px;font-size:13px}
+
+/* invoice / receipt */
+.invoice-doc{font-size:13px}
+.invoice-doc .top{display:flex;justify-content:space-between;margin-bottom:18px;gap:16px}
+.invoice-doc table{width:100%;border-collapse:collapse;margin:12px 0}
+.invoice-doc th{text-align:left;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border);padding:8px 6px}
+.invoice-doc td{padding:8px 6px;border-bottom:1px solid #f1f4f8}
+.inv-totals{margin-left:auto;width:260px}
+.inv-totals .r{display:flex;justify-content:space-between;padding:4px 0}
+
+/* P&L */
+.pl-row{display:flex;justify-content:space-between;padding:10px 18px;border-bottom:1px solid #f1f4f8;font-size:13px}
+.pl-row.head{background:#f8fafd;font-weight:600;color:var(--muted);font-size:12px}
+.pl-row.total{font-weight:700;background:var(--primary-50);color:var(--primary)}
+.pl-row.sub{padding-left:34px;color:var(--muted)}
+.hbar{display:flex;align-items:center;gap:12px;padding:8px 0;font-size:12.5px}
+.hbar .lbl{width:120px;flex-shrink:0}
+.hbar .track{flex:1;height:10px;background:#eef2f7;border-radius:6px;overflow:hidden}
+.hbar .fill{height:100%;border-radius:6px;background:var(--primary)}
+.hbar .v{width:80px;text-align:right;font-weight:600}
+
+/* roles */
+.perm-table td,.perm-table th{text-align:center}
+.perm-table td:first-child,.perm-table th:first-child{text-align:left}
+.perm-table input{width:16px;height:16px;accent-color:var(--primary)}
+
+/* login */
+.login{position:fixed;inset:0;display:none;grid-template-columns:1.1fr 1fr;background:var(--surface);z-index:150}
+.login.show{display:grid}
+.login-art{background:linear-gradient(145deg,#1d4ed8,#2463eb 45%,#0ea5e9);color:#fff;padding:48px;display:flex;flex-direction:column;justify-content:space-between}
+.login-art h2{font-size:34px;line-height:1.2;max-width:440px}
+.login-art p{opacity:.85;max-width:420px;margin-top:12px}
+.login-feats{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:460px}
+.login-feats div{background:rgba(255,255,255,.12);border-radius:12px;padding:14px;font-size:13px;display:flex;gap:10px;align-items:center}
+.login-form{display:flex;align-items:center;justify-content:center;padding:32px}
+.login-form form{width:100%;max-width:380px}
+.login-form h1{font-size:24px;margin:22px 0 4px}
+.input-ic{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:9px;padding:0 12px;height:44px;color:var(--faint)}
+.input-ic input{border:0;outline:0;flex:1;font-size:14px;background:none}
+
+/* responsive */
+@media (max-width:1280px){
+  .grid-stats{grid-template-columns:repeat(3,1fr)}
+  .grid-dash{grid-template-columns:1fr 1fr}
+  .grid-dash>:first-child{grid-column:1/-1}
+  .summary-grid{grid-template-columns:repeat(3,1fr)}
+  .pos{grid-template-columns:1fr 340px}
+}
+@media (max-width:1024px){
+  .sidebar{transform:translateX(-100%)}
+  body.nav-open .sidebar{transform:none}
+  body.nav-open .overlay{display:block;position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:35}
+  .main,body.collapsed .main{margin-left:0}
+  body.collapsed .sidebar{width:248px}
+  body.collapsed .brand-text,body.collapsed .nav-label,body.collapsed .chev,body.collapsed .promo{display:revert!important}
+  .pos,.grid-21,.grid-2{grid-template-columns:1fr}
+  .user-chip .who{display:none}
+  .login{grid-template-columns:1fr}.login-art{display:none}
+}
+@media (max-width:720px){
+  .content{padding:16px}
+  .topbar{padding:0 12px;gap:8px}
+  .global-search{width:auto;flex:1;max-width:none}
+  .grid-stats,.grid-stats.c4,.grid-dash{grid-template-columns:1fr}
+  .summary-grid{grid-template-columns:1fr 1fr}
+  .form-grid,.detail-grid{grid-template-columns:1fr}
+  .search-input{width:100%}
+  .pay-methods{grid-template-columns:repeat(2,1fr)}
+  .invoice-doc .top{flex-direction:column}
+}
+@media print{
+  .sidebar,.topbar,.toolbar .btn,.head-actions,.row-actions,.table-foot,.toasts{display:none!important}
+  .main{margin:0!important}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div class="login" id="login">
+  <div class="login-art">
+    <div class="brand" style="padding:0;height:auto"><span id="logoWhite"></span><div class="brand-text"><b>Pharmacy</b><small style="color:#dbeafe">Management System</small></div></div>
+    <div>
+      <h2>Run your pharmacy smarter, safer and faster.</h2>
+      <p>Sales, inventory, expiry tracking, purchasing and accounting — all in one place.</p>
+    </div>
+    <div class="login-feats" id="loginFeats"></div>
+  </div>
+  <div class="login-form">
+    <form id="loginForm">
+      <span id="logoLogin"></span>
+      <h1>Welcome back</h1>
+      <p class="muted">Sign in to continue to your dashboard</p>
+      <div class="field" style="margin-top:24px"><label>Username or Email</label><div class="input-ic" data-ic="user"><input value="admin@pharmacy.com" required></div></div>
+      <div class="field" style="margin-top:14px"><label>Password</label><div class="input-ic" data-ic="lock"><input type="password" value="password" required></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 20px;font-size:13px">
+        <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" checked style="accent-color:var(--primary)"> Remember me</label>
+        <a class="link" href="#/login">Forgot password?</a>
+      </div>
+      <button class="btn btn-primary btn-block" style="height:44px">Sign In</button>
+      <p class="faint" style="text-align:center;margin-top:24px;font-size:12px">© 2026 Pharmacy ERP · Smart. Secure. Efficient.</p>
+    </form>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app">
+  <aside class="sidebar">
+    <a class="brand" href="#/dashboard"><span id="logo"></span><div class="brand-text"><b>Pharmacy</b><small>Management System</small></div></a>
+    <nav class="nav" id="nav"></nav>
+    <div class="promo">
+      <svg width="96" height="64" viewBox="0 0 96 64" fill="none">
+        <rect x="14" y="14" width="34" height="44" rx="6" fill="#2463eb"/><rect x="18" y="6" width="26" height="10" rx="3" fill="#93b4f7"/>
+        <rect x="27" y="26" width="8" height="22" rx="2" fill="#fff"/><rect x="20" y="33" width="22" height="8" rx="2" fill="#fff"/>
+        <rect x="52" y="22" width="32" height="34" rx="6" fill="#dbe7ff"/>
+        <circle cx="62" cy="32" r="4" fill="#93b4f7"/><circle cx="74" cy="32" r="4" fill="#93b4f7"/><circle cx="62" cy="45" r="4" fill="#93b4f7"/><circle cx="74" cy="45" r="4" fill="#93b4f7"/>
+        <rect x="40" y="46" width="20" height="9" rx="4.5" transform="rotate(-25 50 50)" fill="#ef4444"/><rect x="50" y="46" width="10" height="9" rx="4.5" transform="rotate(-25 50 50)" fill="#fde68a"/>
+      </svg>
+      <b>Pharmacy ERP</b>
+      <small>Smart. Secure. Efficient.<br>All-in-One Solution.</small>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="menuBtn" title="Toggle menu"></button>
+      <div class="spacer"></div>
+      <label class="global-search"><span data-ic="search"></span><input id="globalSearch" placeholder="Search medicine, invoice, customer..."></label>
+      <div class="rel">
+        <button class="icon-btn" id="bellBtn"><span data-ic="bell"></span><span class="dot">5</span></button>
+        <div class="dropdown notif" id="notifMenu"></div>
+      </div>
+      <div class="rel">
+        <button class="user-chip" id="userBtn"><span class="avatar">GD</span><span class="who"><b>Godfrey D.</b><small>Administrator</small></span></button>
+        <div class="dropdown" id="userMenu"></div>
+      </div>
+    </header>
+    <main class="content" id="content"></main>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal" id="modalBox">
+    <div class="modal-head"><h3 id="mtitle"></h3><button class="icon-btn" data-close id="mclose"></button></div>
+    <div class="modal-body" id="mbody"></div>
+    <div class="modal-foot" id="mfoot"></div>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ================= ICONS ================= */
+const ICONS={
+home:'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+cart:'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+bag:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+box:'<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+truck:'<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
+wallet:'<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
+chart:'<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+db:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
+shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+gear:'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+menu:'<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>',
+chev:'<path d="m6 9 6 6 6-6"/>',
+alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+minus:'<path d="M5 12h14"/>',
+download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+edit:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+trash:'<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+printer:'<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>',
+pill:'<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
+cal:'<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
+logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+check:'<path d="M20 6 9 17l-5-5"/>',
+trend:'<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+receipt:'<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+undo:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+card:'<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',
+percent:'<line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+lock:'<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+clip:'<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+layers:'<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+scan:'<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/>',
+dollar:'<circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/>',
+building:'<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
+phone:'<rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/>',
+cash:'<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
+pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+ruler:'<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>',
+book:'<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>'
+};
+const ic=(n,s=18,sw=1.8)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]||''}</svg>`;
+const LOGO=(s=36,white)=>`<svg width="${s}" height="${s}" viewBox="0 0 40 40"><rect x="13" y="3" width="14" height="34" rx="5" fill="${white?'#fff':'#2463eb'}"/><rect x="3" y="13" width="34" height="14" rx="5" fill="${white?'#bae6fd':'#22b8cf'}" opacity=".92"/><rect x="13" y="13" width="14" height="14" fill="${white?'#e0f2fe':'#1d4ed8'}"/><path d="M17 20h6M20 17v6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+
+/* ================= HELPERS ================= */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const num=n=>Number(n).toLocaleString('en-US');
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const addDays=n=>new Date(TODAY.getTime()+n*864e5);
+const p2=n=>String(n).padStart(2,'0');
+const fmtD=d=>`${p2(d.getDate())}-${p2(d.getMonth()+1)}-${d.getFullYear()}`;
+const fmtL=d=>`${d.getDate()} ${MON[d.getMonth()]}, ${d.getFullYear()}`;
+const iso=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+const daysLeft=d=>Math.round((d-TODAY)/864e5);
+let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const pick=a=>a[Math.floor(rnd()*a.length)];
+
+const TONES={green:['paid','completed','active','in stock','received','good','approved','success','posted','refunded'],
+ amber:['pending','partial','low stock','draft','expiring soon','on hold','processing'],
+ red:['overdue','expired','out of stock','cancelled','inactive','rejected','damaged'],
+ blue:['ordered','sent','retail','in transit'],purple:['insurance','wholesale','admin']};
+const tone=t=>{t=String(t).toLowerCase();for(const k in TONES)if(TONES[k].includes(t))return k;return 'gray'};
+const badge=t=>`<span class="badge b-${tone(t)}">${esc(t)}</span>`;
+const thumb=(icon,t='blue')=>`<span class="thumb tone-${t}">${ic(icon,16)}</span>`;
+const cellMain=(icon,t,title,sub)=>`<div class="cell-main">${thumb(icon,t)}<div><b>${esc(title)}</b>${sub?`<small>${esc(sub)}</small>`:''}</div></div>`;
+
+/* ================= MOCK DATA ================= */
+const MEDS=[
+['Paracetamol 500mg','Paracetamol','Analgesic','Tablet','GSK','PCM240',420,1250,200,0.80,1.50,1640],
+['Amoxicillin 250mg','Amoxicillin','Antibiotic','Capsule','Cipla','AMX123',10,340,100,2.10,3.80,575],
+['Cetirizine 10mg','Cetirizine','Antihistamine','Tablet','Sun Pharma','CET456',35,85,100,0.90,1.80,1000],
+['Omeprazole 20mg','Omeprazole','Antacid','Capsule',"Dr. Reddy's",'OME789',61,230,80,1.60,3.20,515],
+['Azithromycin 500mg','Azithromycin','Antibiotic','Tablet','Pfizer','AZI321',76,140,60,4.50,7.90,158],
+['Ibuprofen 400mg','Ibuprofen','Analgesic','Tablet','Abbott','IBU552',300,780,150,0.70,1.40,420],
+['Metformin 500mg','Metformin','Antidiabetic','Tablet','Merck','MET908',500,610,150,0.60,1.20,380],
+['Amlodipine 5mg','Amlodipine','Cardiovascular','Tablet','Pfizer','AML221',410,45,80,0.95,2.10,210],
+['Salbutamol Inhaler','Salbutamol 100mcg','Respiratory','Inhaler','GSK','SAL770',220,0,20,4.80,8.50,64],
+['Ciprofloxacin 500mg','Ciprofloxacin','Antibiotic','Tablet','Bayer','CIP118',180,260,80,1.80,3.40,190],
+['Vitamin C 1000mg','Ascorbic Acid','Supplement','Tablet',"Nature's Bounty",'VTC300',600,540,100,0.40,0.90,330],
+['ORS Sachet','Oral Rehydration Salts','Electrolyte','Sachet','Medipharm','ORS050',365,900,200,0.25,0.60,460],
+['Artemether/Lumefantrine','AL 20/120mg','Antimalarial','Tablet','Novartis','ALU640',150,320,100,3.20,5.50,240],
+['Losartan 50mg','Losartan','Cardiovascular','Tablet','Sandoz','LOS402',290,18,60,1.10,2.40,120],
+['Diclofenac Gel 1%','Diclofenac','Analgesic','Gel','Novartis','DIC233',-5,30,25,2.80,5.20,48],
+['Insulin Glargine','Insulin 100IU/ml','Antidiabetic','Injection','Sanofi','INS901',120,0,10,18.00,29.00,22],
+['Cough Syrup 100ml','Dextromethorphan','Respiratory','Syrup','Benylin','CSY110',45,75,40,2.20,4.50,135],
+['Folic Acid 5mg','Folic Acid','Supplement','Tablet','Medreich','FOL015',480,400,100,0.20,0.50,260],
+['Prednisolone 5mg','Prednisolone','Corticosteroid','Tablet','Pfizer','PRD777',25,150,50,0.50,1.10,95],
+['Fluconazole 150mg','Fluconazole','Antifungal','Capsule','Cipla','FLU150',260,95,40,1.30,2.90,110]
+].map((r,i)=>({id:i+1,code:'MED-'+p2(i+1).padStart(4,'0'),name:r[0],generic:r[1],cat:r[2],form:r[3],mfr:r[4],batch:r[5],exp:addDays(r[6]),stock:r[7],reorder:r[8],cost:r[9],price:r[10],sold:r[11],rx:['Antibiotic','Cardiovascular','Antidiabetic','Corticosteroid'].includes(r[2])?'Yes':'No'}));
+const stockStatus=m=>m.stock===0?'Out of Stock':m.stock<=m.reorder?'Low Stock':'In Stock';
+const expStatus=m=>{const d=daysLeft(m.exp);return d<0?'Expired':d<=90?'Expiring Soon':'Good'};
+const CATS=[...new Set(MEDS.map(m=>m.cat))];
+const FORMS=['Tablet','Capsule','Syrup','Injection','Inhaler','Gel','Sachet','Cream','Drops'];
+
+const CUSTOMERS=[
+['John Mwakyusa','+255 712 345 678','john.m@mail.com','Retail',2450,0,0,'Active'],
+['Neema Kileo','+255 754 222 019','neema.k@mail.com','Insurance',5820.5,320,1,'Active'],
+['Amina Hassan','+255 688 410 552','amina.h@mail.com','Retail',980,0,2,'Active'],
+['City Clinic Ltd','+255 222 110 900','orders@cityclinic.co.tz','Wholesale',18450,2400,3,'Active'],
+['Peter Mushi','+255 765 870 331','peter.mushi@mail.com','Retail',640.75,0,6,'Active'],
+['Grace Lyimo','+255 713 909 118','grace.l@mail.com','Insurance',3105,150,8,'Active'],
+['Baraka Health Centre','+255 222 776 401','info@baraka.co.tz','Wholesale',12980,4500,10,'Active'],
+['Fatuma Said','+255 719 554 230','fatuma.s@mail.com','Retail',415,0,21,'Inactive'],
+['David Mrema','+255 744 102 667','d.mrema@mail.com','Retail',1220,85,4,'Active'],
+['Rehema Nyirenda','+255 787 330 140','rehema.n@mail.com','Insurance',2760,0,13,'Active']
+].map((r,i)=>({id:i+1,code:'CUS-'+String(1001+i),name:r[0],phone:r[1],email:r[2],type:r[3],spent:r[4],balance:r[5],last:addDays(-r[6]),status:r[7]}));
+
+const SUPPLIERS=[
+['MedSupply Africa Ltd','Joseph Kimaro','+255 222 456 789','sales@medsupply.co.tz','Net 30',8450,'Active'],
+['Cipla Distributors','Anita Shah','+255 222 334 110','orders@cipla-dist.com','Net 45',3200,'Active'],
+['Pharma Direct Co.','Michael Otieno','+254 720 118 442','info@pharmadirect.co.ke','Net 30',0,'Active'],
+['GSK East Africa','Lucy Wanjiru','+254 711 600 200','ea.orders@gsk.com','Net 60',12400,'Active'],
+['Shelys Pharmaceuticals','Hamisi Juma','+255 222 860 300','supply@shelys.co.tz','Net 30',1980,'Active'],
+['Novartis Tanzania','Sarah Mollel','+255 222 211 455','tz.supply@novartis.com','Net 60',0,'Active'],
+['Sun Pharma Agencies','Ravi Kumar','+255 222 119 870','sun@agencies.co.tz','COD',540,'Inactive'],
+['Medreich Wholesale','Emmanuel Lema','+255 754 667 221','wholesale@medreich.co.tz','Net 15',760,'Active']
+].map((r,i)=>({id:i+1,code:'SUP-'+String(201+i),name:r[0],contact:r[1],phone:r[2],email:r[3],terms:r[4],balance:r[5],status:r[6]}));
+
+const METHODS=['Cash','Card','Mobile Money','Insurance'];
+const SALES=Array.from({length:18},(_,i)=>{
+  const items=1+Math.floor(rnd()*6), total=+(20+rnd()*480).toFixed(2);
+  const st=i===3||i===11?'Partial':i===7?'Pending':i===14?'Cancelled':'Paid';
+  const paid=st==='Paid'?total:st==='Partial'?+(total*0.5).toFixed(2):0;
+  return {no:'INV-'+String(123-i).padStart(5,'0'),customer:i%3===0?'Walk-in Customer':CUSTOMERS[i%CUSTOMERS.length].name,date:addDays(-Math.floor(i/2)),items,total,paid,method:METHODS[i%4],status:st,cashier:pick(['Godfrey D.','Mary K.','Ali S.'])};
+});
+const PURCHASES=Array.from({length:12},(_,i)=>{
+  const total=+(400+rnd()*4200).toFixed(2), st=['Received','Ordered','Partial','Received','Pending','Received','Cancelled','Received','Ordered','Received','Received','Received'][i];
+  return {no:'PUR-'+String(9-i+1000).slice(1),supplier:SUPPLIERS[i%SUPPLIERS.length].name,date:addDays(-i*3),expected:addDays(-i*3+7),items:3+Math.floor(rnd()*14),total,paid:st==='Received'?total:st==='Partial'?+(total*.4).toFixed(2):0,status:st};
+});
+PURCHASES.forEach((p,i)=>p.no='PUR-'+String(9-i>0?9-i:100+i).padStart(4,'0'));
+const GRNS=PURCHASES.filter(p=>['Received','Partial'].includes(p.status)).map((p,i)=>({no:'GRN-'+String(512-i),po:p.no,supplier:p.supplier,inv:'SI-'+(7800+i*13),date:addDays(-i*3-2),items:p.items,total:p.total,status:p.status==='Partial'?'Partial':'Completed',by:pick(['Mary K.','Ali S.'])}));
+const SRETURNS=Array.from({length:6},(_,i)=>({no:'SRN-'+String(40-i).padStart(4,'0'),inv:SALES[i*2+1].no,customer:SALES[i*2+1].customer,med:MEDS[i*3].name,qty:1+i%3,amount:+(MEDS[i*3].price*(1+i%3)).toFixed(2),reason:['Wrong item','Damaged pack','Adverse reaction','Expired on delivery','Customer changed mind','Duplicate sale'][i],date:addDays(-i*2),status:i===1?'Pending':'Refunded'}));
+const PRETURNS=Array.from({length:5},(_,i)=>({no:'PRN-'+String(18-i).padStart(4,'0'),supplier:SUPPLIERS[i].name,ref:GRNS[i%GRNS.length].no,med:MEDS[[14,1,9,4,16][i]].name,batch:MEDS[[14,1,9,4,16][i]].batch,qty:[30,20,12,10,24][i],amount:[84,42,21.6,45,52.8][i],reason:['Expired','Near expiry','Damaged','Wrong batch','Recalled'][i],date:addDays(-i*4-1),status:i===0?'Pending':i===3?'Rejected':'Approved'}));
+const ADJUST=Array.from({length:8},(_,i)=>{const m=MEDS[(i*5)%20];return {no:'ADJ-'+String(77-i).padStart(4,'0'),med:m.name,batch:m.batch,type:['Damage','Increase','Expired Write-off','Decrease','Count Correction','Damage','Increase','Theft/Loss'][i],qty:[-6,40,-30,-4,12,-2,25,-3][i],reason:['Broken during handling','Physical count surplus','Batch expired','Sample issued','Cycle count variance','Packaging torn','Return to stock','Missing at count'][i],by:pick(['Mary K.','Ali S.','Godfrey D.']),date:addDays(-i*2),status:i===1?'Pending':'Approved'}});
+const EXP_CATS=['Rent','Utilities','Salaries','Transport','Maintenance','Marketing','Office Supplies','Licenses'];
+const EXPENSES=Array.from({length:12},(_,i)=>({no:'EXP-'+String(45-i).padStart(4,'0'),cat:EXP_CATS[i%8],desc:['Monthly shop rent','Electricity bill (LUKU)','Staff salaries — Oct','Delivery fuel','Fridge servicing','Social media ads','Printer paper & receipts','Pharmacy council license renewal','Water bill','Weekend staff overtime','Courier — supplier returns','Shelving repairs'][i],amount:[1200,185.4,6400,96,140,250,58.2,320,42.5,380,35,210][i],date:addDays(-i*2-1),method:pick(['Cash','Bank Transfer','Mobile Money']),by:pick(['Godfrey D.','Mary K.']),status:i===2?'Pending':'Paid'}));
+const PAYMENTS=Array.from({length:12},(_,i)=>{const rec=i%3!==2;return {no:'PAY-'+String(56-i).padStart(5,'0'),type:rec?'Received':'Paid',party:rec?CUSTOMERS[i%10].name:SUPPLIERS[i%8].name,ref:rec?SALES[i].no:PURCHASES[i%12].no,method:METHODS[(i+1)%4],amount:+(80+rnd()*1800).toFixed(2),date:addDays(-i),status:i===4?'Pending':i===9?'Overdue':'Completed'}});
+const USERS=[
+['Godfrey Desidery','godfrey','godfrey.d@pharmacy.com','Admin','Main Branch',0,'Active'],
+['Mary Kimaro','mary.k','mary.k@pharmacy.com','Pharmacist','Main Branch',0,'Active'],
+['Ali Salim','ali.s','ali.s@pharmacy.com','Cashier','Main Branch',1,'Active'],
+['Janeth Mbwambo','janeth','janeth@pharmacy.com','Store Keeper','Mbezi Branch',2,'Active'],
+['Kelvin Swai','kelvin','kelvin@pharmacy.com','Accountant','Main Branch',5,'Active'],
+['Zainabu Omari','zainabu','zainabu@pharmacy.com','Cashier','Mbezi Branch',30,'Inactive']
+].map((r,i)=>({id:i+1,name:r[0],username:r[1],email:r[2],role:r[3],branch:r[4],last:addDays(-r[5]),status:r[6]}));
+let bal=8200;
+const LEDGER=[
+['Opening Balance','Cash Account','Balance b/f',0,0],
+['Sales','Cash Account','Daily cash sales',2850.4,0],
+['Purchase','Accounts Payable','PUR-0009 — MedSupply Africa',0,3420],
+['Expense','Rent Expense','Monthly shop rent',0,1200],
+['Receipt','Accounts Receivable','City Clinic Ltd — part payment',1500,0],
+['Sales','Mobile Money','M-Pesa / Tigo Pesa sales',1960.25,0],
+['Expense','Utilities','Electricity bill (LUKU)',0,185.4],
+['Payment','Accounts Payable','GSK East Africa settlement',0,2100],
+['Sales','Card Account','POS card settlements',1240.9,0],
+['Expense','Salaries','Staff salaries — Oct',0,6400],
+['Receipt','Insurance Claims','NHIF claim reimbursement',3780,0]
+].map((r,i)=>{bal+=r[3]-r[4];return {no:'JV-'+String(300+i),date:addDays(-10+i),type:r[0],account:r[1],desc:r[2],debit:r[3],credit:r[4],balance:bal}});
+
+/* chart data */
+const daily=(()=>{const v=Array.from({length:30},(_,i)=>1000+i*35+Math.sin(i*1.25)*260+(rnd()-.5)*220);const s=v.reduce((a,b)=>a+b,0);return v.map(x=>+(x*45250/s).toFixed(2))})();
+const SERIES={
+ '30':{labels:daily.map((_,i)=>{const d=addDays(i-29);return `${d.getDate()} ${MON[d.getMonth()]}`}),values:daily},
+ '7':{labels:daily.slice(-7).map((_,i)=>{const d=addDays(i-6);return `${d.getDate()} ${MON[d.getMonth()]}`}),values:daily.slice(-7)},
+ '12':{labels:Array.from({length:12},(_,i)=>{const d=new Date(TODAY.getFullYear(),TODAY.getMonth()-11+i,1);return `${MON[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`}),values:[28400,31200,29600,34100,36200,33400,38100,40200,37600,41300,43100,45250]}
+};
+const MONTH_LABELS=SERIES['12'].labels;
+
+/* ================= CHARTS ================= */
+const kfmt=v=>v>=1000?(v/1000).toFixed(v%1000?1:0).replace('.0','')+'K':String(Math.round(v));
+const niceMax=v=>{const p=Math.pow(10,Math.floor(Math.log10(v)));const m=v/p;return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*p};
+function lineChart(el,labels,values,h=230){
+  const W=Math.max(el.clientWidth-28,280),p={l:42,r:14,t:14,b:28},n=values.length,max=niceMax(Math.max(...values)*1.08);
+  const x=i=>p.l+i*(W-p.l-p.r)/(n-1),y=v=>p.t+(1-v/max)*(h-p.t-p.b);
+  let g='';for(let k=0;k<=5;k++){const v=max*k/5,yy=y(v);g+=`<line x1="${p.l}" x2="${W-p.r}" y1="${yy}" y2="${yy}" stroke="#eef2f7"/><text x="${p.l-8}" y="${yy+4}" text-anchor="end" font-size="10.5" fill="#94a3b8">${kfmt(v)}</text>`}
+  const step=Math.ceil(n/6);let xl='';labels.forEach((l,i)=>{if(i%step===0||i===n-1&&n<=12)xl+=`<text x="${x(i)}" y="${h-8}" text-anchor="middle" font-size="10.5" fill="#94a3b8">${l}</text>`});
+  const pts=values.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+  const line='M'+pts.join('L'),area=line+`L${x(n-1)},${h-p.b}L${x(0)},${h-p.b}Z`;
+  const dots=values.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="${n>14?2.6:3.5}" fill="#fff" stroke="#2463eb" stroke-width="1.8"/>`).join('');
+  el.innerHTML=`<svg width="${W}" height="${h}" style="display:block"><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2463eb" stop-opacity=".22"/><stop offset="1" stop-color="#2463eb" stop-opacity="0"/></linearGradient></defs>${g}${xl}<path d="${area}" fill="url(#ga)"/><path d="${line}" fill="none" stroke="#2463eb" stroke-width="2.2" stroke-linejoin="round"/>${dots}<line class="guide" y1="${p.t}" y2="${h-p.b}" stroke="#2463eb" stroke-dasharray="3 3" opacity="0"/><circle class="hdot" r="5" fill="#2463eb" stroke="#fff" stroke-width="2" opacity="0"/><rect x="${p.l}" y="0" width="${W-p.l-p.r}" height="${h}" fill="transparent" class="hit"/></svg><div class="tooltip"></div>`;
+  const tip=$('.tooltip',el),guide=$('.guide',el),hd=$('.hdot',el);
+  $('.hit',el).addEventListener('mousemove',e=>{const r=e.target.getBoundingClientRect();const i=Math.max(0,Math.min(n-1,Math.round((e.clientX-r.left)/(W-p.l-p.r)*(n-1))));
+    guide.setAttribute('x1',x(i));guide.setAttribute('x2',x(i));guide.setAttribute('opacity',1);hd.setAttribute('cx',x(i));hd.setAttribute('cy',y(values[i]));hd.setAttribute('opacity',1);
+    tip.innerHTML=`<div class="muted">${labels[i]}</div><b>Sales: ${money(values[i])}</b>`;tip.style.display='block';
+    const tx=x(i)+14+140>W?x(i)-150:x(i)+14;tip.style.left=(tx+14)+'px';tip.style.top=(y(values[i])-10)+'px'});
+  $('.hit',el).addEventListener('mouseleave',()=>{tip.style.display='none';guide.setAttribute('opacity',0);hd.setAttribute('opacity',0)});
+}
+function barChart(el,labels,series,h=260){
+  const W=Math.max(el.clientWidth-28,280),p={l:46,r:10,t:12,b:28},max=niceMax(Math.max(...series.flatMap(s=>s.values))*1.05);
+  const gw=(W-p.l-p.r)/labels.length,bw=Math.min(16,gw*.7/series.length),y=v=>p.t+(1-v/max)*(h-p.t-p.b);
+  let g='';for(let k=0;k<=5;k++){const v=max*k/5,yy=y(v);g+=`<line x1="${p.l}" x2="${W-p.r}" y1="${yy}" y2="${yy}" stroke="#eef2f7"/><text x="${p.l-8}" y="${yy+4}" text-anchor="end" font-size="10.5" fill="#94a3b8">${kfmt(v)}</text>`}
+  let b='';labels.forEach((l,i)=>{const cx=p.l+gw*i+gw/2,start=cx-bw*series.length/2-(series.length-1);
+    series.forEach((s,j)=>{const v=s.values[i],yy=y(v);b+=`<rect x="${start+j*(bw+2)}" y="${yy}" width="${bw}" height="${h-p.b-yy}" rx="3" fill="${s.color}"><title>${s.name} · ${l}: ${money(v)}</title></rect>`});
+    b+=`<text x="${cx}" y="${h-8}" text-anchor="middle" font-size="10.5" fill="#94a3b8">${l}</text>`});
+  el.innerHTML=`<svg width="${W}" height="${h}" style="display:block">${g}${b}</svg>`;
+}
+function donut(segs,top,bottom,size=150){
+  const r=size/2-14,c=2*Math.PI*r,tot=segs.reduce((a,s)=>a+s.value,0);let off=0;
+  const arcs=segs.map(s=>{const len=s.value/tot*c,el=`<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${s.color}" stroke-width="20" stroke-dasharray="${len-1.5} ${c-len+1.5}" stroke-dashoffset="${-off}" transform="rotate(-90 ${size/2} ${size/2})"><title>${s.label}: ${s.display||num(s.value)}</title></circle>`;off+=len;return el}).join('');
+  return `<svg width="${size}" height="${size}" style="flex-shrink:0">${arcs}<text x="50%" y="46%" text-anchor="middle" font-size="11" fill="#64748b">${top}</text><text x="50%" y="60%" text-anchor="middle" font-size="16" font-weight="700" fill="#1e293b">${bottom}</text></svg>
+  <ul class="legend">${segs.map(s=>`<li><i style="background:${s.color}"></i>${s.label}<b>${s.display||num(s.value)}</b></li>`).join('')}</ul>`;
+}
+
+/* ================= SHARED UI ================= */
+let CURRENT=null,AFTER=null,DRAW=null,GLOBAL_Q='';
+const pageHead=(title,crumbs,actions='')=>`<div class="page-head"><div><h1>${title}</h1><div class="crumbs">Home ${crumbs?'/ '+crumbs.split('/').map((c,i,a)=>i===a.length-1?`<span>${c.trim()}</span>`:c.trim()).join(' / '):''}</div></div><div class="head-actions">${actions}</div></div>`;
+const statCard=s=>`<div class="card stat"><div class="stat-icon tone-${s.t}">${ic(s.i,22)}</div><div><small>${s.l}</small><div class="val">${s.v}</div>${s.d?`<div class="delta ${s.down?'down':''}">${s.d}</div>`:''}</div></div>`;
+
+function tablePage(c){
+  CURRENT=c;
+  const acts=c.actions||['view','edit','delete'];
+  return `${pageHead(c.title,c.crumbs,(c.extra||'')+(c.add?`<button class="btn btn-primary" data-act="add">${ic('plus',16)} ${c.add}</button>`:''))}
+  ${c.stats?`<div class="grid-stats ${c.stats.length===4?'c4':''}">${c.stats.map(statCard).join('')}</div>`:''}
+  ${c.above||''}
+  <div class="card">
+    <div class="toolbar">
+      <label class="search-input">${ic('search',16)}<input data-filter placeholder="Search ${c.ph||'records'}..."></label>
+      ${(c.filters||[]).map(f=>`<select class="select" data-select><option value="">${f[0]}</option>${f[1].map(o=>`<option>${o}</option>`).join('')}</select>`).join('')}
+      <div class="spacer"></div>
+      <button class="btn btn-light" data-act="export">${ic('download',16)} Export</button>
+      <button class="btn btn-light" onclick="window.print()">${ic('printer',16)} Print</button>
+    </div>
+    <div class="table-wrap"><table class="table"><thead><tr>${c.cols.map(col=>`<th class="${col.c||''}">${col.h}</th>`).join('')}${acts.length?'<th class="t-right col-actions">Actions</th>':''}</tr></thead>
+    <tbody>${c.rows.map((r,i)=>`<tr data-i="${i}">${c.cols.map(col=>`<td class="${col.c||''}">${col.f?col.f(r):esc(r[col.k])}</td>`).join('')}${acts.length?`<td class="t-right col-actions"><div class="row-actions">${acts.map(a=>`<button data-act="${a}" data-i="${i}" class="${a==='delete'?'del':''}" title="${a}">${ic({view:'eye',edit:'edit',delete:'trash',print:'printer'}[a],15)}</button>`).join('')}</div></td>`:''}</tr>`).join('')}</tbody></table></div>
+    <div class="table-foot"><span data-count>Showing 1 to ${c.rows.length} of ${c.rows.length} entries</span><div class="pager"><button>‹</button><button class="on">1</button><button>2</button><button>3</button><button>›</button></div></div>
+  </div>${c.below||''}`;
+}
+function filterTable(card){
+  const q=($('[data-filter]',card)?.value||'').toLowerCase().trim(),sels=$$('[data-select]',card).map(s=>s.value.toLowerCase()).filter(Boolean);
+  let n=0;$$('tbody tr',card).forEach(tr=>{const t=tr.innerText.toLowerCase(),ok=(!q||t.includes(q))&&sels.every(s=>t.includes(s));tr.style.display=ok?'':'none';if(ok)n++});
+  const tot=$$('tbody tr',card).length,cnt=$('[data-count]',card);if(cnt)cnt.textContent=`Showing ${n?1:0} to ${n} of ${n} entries${n!==tot?` (filtered from ${tot})`:''}`;
+}
+function exportTable(card){
+  const rows=$$('tr',card).filter(r=>r.style.display!=='none');
+  const csv=rows.map(r=>[...r.children].filter(c=>!c.classList.contains('col-actions')).map(c=>'"'+c.innerText.replace(/\s+/g,' ').trim().replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=(CURRENT?.title||'export').replace(/\s+/g,'_')+'.csv';a.click();
+  toast('Exported '+(rows.length-1)+' rows to CSV');
+}
+function openModal(title,body,foot,wide){
+  $('#mtitle').textContent=title;$('#mbody').innerHTML=body;$('#mfoot').innerHTML=foot??`<button class="btn btn-light" data-close>Close</button>`;
+  $('#modalBox').classList.toggle('wide',!!wide);$('#modal').classList.add('show');
+}
+const closeModal=()=>$('#modal').classList.remove('show');
+function toast(msg,err){const t=document.createElement('div');t.className='toast'+(err?' err':'');t.innerHTML=ic(err?'alert':'check',18)+esc(msg);$('#toasts').appendChild(t);setTimeout(()=>t.remove(),2800)}
+function fieldHTML(f,row){
+  let v=row&&f.k?row[f.k]:(f.v??'');if(v instanceof Date)v=iso(v);
+  const id='f_'+Math.random().toString(36).slice(2,8);
+  let inp;
+  if(f.t==='select')inp=`<select class="select" id="${id}">${f.o.map(o=>`<option ${String(o)===String(v)?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  else if(f.t==='textarea')inp=`<textarea class="input" id="${id}" placeholder="${esc(f.ph||'')}">${esc(v)}</textarea>`;
+  else inp=`<input class="input" id="${id}" type="${f.t||'text'}" value="${esc(v)}" placeholder="${esc(f.ph||'')}" ${f.t==='number'?'step="any"':''}>`;
+  return `<div class="field ${f.full?'full':''}"><label for="${id}">${f.l}${f.req?' <span style="color:var(--red)">*</span>':''}</label>${inp}</div>`;
+}
+function openForm(form,row){
+  openModal((row?'Edit ':'Add New ')+form.title,`<form class="form-grid" onsubmit="return false">${form.fields.map(f=>fieldHTML(f,row)).join('')}</form>${form.extra||''}`,
+    `<button class="btn btn-light" data-close>Cancel</button><button class="btn btn-primary" id="msave">${ic('check',16)} ${row?'Update':'Save'}</button>`,form.wide);
+  $('#msave').onclick=()=>{closeModal();toast(`${form.title} ${row?'updated':'saved'} successfully`)};
+}
+function viewDetails(row){
+  const c=CURRENT;
+  openModal(c.title.replace(/s$/,'')+' Details',`<dl class="detail-grid">${c.cols.map(col=>`<div><dt>${col.h}</dt><dd>${col.f?col.f(row):esc(row[col.k])}</dd></div>`).join('')}</dl>`,
+    `<button class="btn btn-light" data-close>Close</button>${c.form?`<button class="btn btn-primary" id="medit">${ic('edit',16)} Edit</button>`:''}`);
+  if(c.form)$('#medit').onclick=()=>openForm(c.form,row);
+}
+function confirmDelete(i){
+  openModal('Confirm Delete',`<div style="display:flex;gap:14px;align-items:flex-start"><span class="stat-icon tone-red">${ic('trash',22)}</span><div><b>Are you sure?</b><p class="muted" style="margin-top:4px">This record will be permanently removed. This action cannot be undone.</p></div></div>`,
+    `<button class="btn btn-light" data-close>Cancel</button><button class="btn btn-danger" id="mdel">${ic('trash',16)} Delete</button>`);
+  $('#mdel').onclick=()=>{const tr=$(`#content tbody tr[data-i="${i}"]`);tr&&tr.remove();closeModal();toast('Record deleted')};
+}
+
+/* ================= FORMS ================= */
+const F={
+ customer:{title:'Customer',fields:[{l:'Full Name',k:'name',req:1},{l:'Phone',k:'phone',req:1},{l:'Email',k:'email',t:'email'},{l:'Customer Type',k:'type',t:'select',o:['Retail','Wholesale','Insurance']},{l:'Insurance Provider',t:'select',o:['None','NHIF','Jubilee','AAR','Strategis']},{l:'Credit Limit ($)',t:'number',v:0},{l:'Status',k:'status',t:'select',o:['Active','Inactive']},{l:'Date of Birth',t:'date'},{l:'Address',t:'textarea',full:1}]},
+ supplier:{title:'Supplier',fields:[{l:'Company Name',k:'name',req:1},{l:'Contact Person',k:'contact'},{l:'Phone',k:'phone',req:1},{l:'Email',k:'email',t:'email'},{l:'TIN Number'},{l:'Payment Terms',k:'terms',t:'select',o:['COD','Net 15','Net 30','Net 45','Net 60']},{l:'Status',k:'status',t:'select',o:['Active','Inactive']},{l:'Opening Balance ($)',k:'balance',t:'number'},{l:'Address',t:'textarea',full:1}]},
+ medicine:{title:'Medicine',wide:1,fields:[{l:'Medicine Name',k:'name',req:1},{l:'Generic Name',k:'generic'},{l:'Category',k:'cat',t:'select',o:CATS},{l:'Dosage Form',k:'form',t:'select',o:FORMS},{l:'Manufacturer',k:'mfr',t:'select',o:[...new Set(MEDS.map(m=>m.mfr))]},{l:'Barcode / SKU',k:'code'},{l:'Cost Price ($)',k:'cost',t:'number'},{l:'Selling Price ($)',k:'price',t:'number'},{l:'Reorder Level',k:'reorder',t:'number'},{l:'Prescription Required',k:'rx',t:'select',o:['No','Yes']},{l:'Storage',t:'select',o:['Room Temperature','Refrigerated (2–8°C)','Cool & Dry']},{l:'Tax Rate',t:'select',o:['0%','5%','18%']},{l:'Description',t:'textarea',full:1}]},
+ stock:{title:'Stock Item',fields:[{l:'Medicine',k:'name',t:'select',o:MEDS.map(m=>m.name)},{l:'Batch No.',k:'batch'},{l:'Quantity',k:'stock',t:'number'},{l:'Expiry Date',k:'exp',t:'date'},{l:'Cost Price ($)',k:'cost',t:'number'},{l:'Selling Price ($)',k:'price',t:'number'},{l:'Shelf / Location',v:'A-01'},{l:'Reorder Level',k:'reorder',t:'number'}]},
+ adjust:{title:'Stock Adjustment',fields:[{l:'Medicine',k:'med',t:'select',o:MEDS.map(m=>m.name)},{l:'Batch No.',k:'batch'},{l:'Adjustment Type',k:'type',t:'select',o:['Increase','Decrease','Damage','Expired Write-off','Count Correction','Theft/Loss']},{l:'Quantity',k:'qty',t:'number'},{l:'Date',k:'date',t:'date',v:iso(TODAY)},{l:'Status',k:'status',t:'select',o:['Pending','Approved']},{l:'Reason',k:'reason',t:'textarea',full:1}]},
+ expense:{title:'Expense',fields:[{l:'Category',k:'cat',t:'select',o:EXP_CATS},{l:'Amount ($)',k:'amount',t:'number',req:1},{l:'Date',k:'date',t:'date',v:iso(TODAY)},{l:'Payment Method',k:'method',t:'select',o:['Cash','Bank Transfer','Mobile Money','Card']},{l:'Reference No.'},{l:'Status',k:'status',t:'select',o:['Paid','Pending']},{l:'Description',k:'desc',t:'textarea',full:1}]},
+ payment:{title:'Payment',fields:[{l:'Payment Type',k:'type',t:'select',o:['Received','Paid']},{l:'Party',k:'party',t:'select',o:[...CUSTOMERS.map(c=>c.name),...SUPPLIERS.map(s=>s.name)]},{l:'Reference (Invoice/PO)',k:'ref'},{l:'Amount ($)',k:'amount',t:'number',req:1},{l:'Method',k:'method',t:'select',o:METHODS.concat('Bank Transfer')},{l:'Date',k:'date',t:'date',v:iso(TODAY)},{l:'Notes',t:'textarea',full:1}]},
+ user:{title:'User',fields:[{l:'Full Name',k:'name',req:1},{l:'Username',k:'username',req:1},{l:'Email',k:'email',t:'email'},{l:'Phone'},{l:'Role',k:'role',t:'select',o:['Admin','Pharmacist','Cashier','Store Keeper','Accountant']},{l:'Branch',k:'branch',t:'select',o:['Main Branch','Mbezi Branch']},{l:'Password',t:'password'},{l:'Confirm Password',t:'password'},{l:'Status',k:'status',t:'select',o:['Active','Inactive']}]},
+ category:{title:'Category',fields:[{l:'Category Name',k:'name',req:1},{l:'Code',k:'code'},{l:'Status',k:'status',t:'select',o:['Active','Inactive']},{l:'Description',k:'desc',t:'textarea',full:1}]},
+ unit:{title:'Unit / Dosage Form',fields:[{l:'Name',k:'name',req:1},{l:'Abbreviation',k:'abbr'},{l:'Type',k:'type',t:'select',o:['Dosage Form','Pack Unit']},{l:'Status',k:'status',t:'select',o:['Active','Inactive']}]},
+ mfr:{title:'Manufacturer',fields:[{l:'Name',k:'name',req:1},{l:'Country',k:'country'},{l:'Email',t:'email'},{l:'Phone'},{l:'Status',k:'status',t:'select',o:['Active','Inactive']},{l:'Address',t:'textarea',full:1}]},
+ sreturn:{title:'Sales Return',fields:[{l:'Invoice No.',k:'inv',t:'select',o:SALES.map(s=>s.no)},{l:'Customer',k:'customer'},{l:'Medicine',k:'med',t:'select',o:MEDS.map(m=>m.name)},{l:'Quantity',k:'qty',t:'number'},{l:'Refund Method',t:'select',o:['Cash','Store Credit','Mobile Money','Card']},{l:'Date',k:'date',t:'date',v:iso(TODAY)},{l:'Reason',k:'reason',t:'textarea',full:1}]},
+ preturn:{title:'Purchase Return',fields:[{l:'Supplier',k:'supplier',t:'select',o:SUPPLIERS.map(s=>s.name)},{l:'GRN Reference',k:'ref',t:'select',o:GRNS.map(g=>g.no)},{l:'Medicine',k:'med',t:'select',o:MEDS.map(m=>m.name)},{l:'Batch No.',k:'batch'},{l:'Quantity',k:'qty',t:'number'},{l:'Date',k:'date',t:'date',v:iso(TODAY)},{l:'Reason',k:'reason',t:'select',o:['Expired','Near expiry','Damaged','Wrong batch','Recalled'],full:1}]}
+};
+const itemsTable=(withBatch)=>`<div style="margin-top:18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>Items</b><button type="button" class="btn btn-light btn-sm" onclick="this.closest('div').nextElementSibling.querySelector('tbody').insertAdjacentHTML('beforeend',itemRow(${withBatch?1:0}))">${ic('plus',14)} Add Item</button></div>
+<div class="table-wrap" style="border:1px solid var(--border);border-radius:10px"><table class="table compact"><thead><tr><th>Medicine</th>${withBatch?'<th>Batch</th><th>Expiry</th>':''}<th>Qty</th><th>Unit Cost</th><th></th></tr></thead><tbody>${[0,1,3].map(i=>itemRow(withBatch,i)).join('')}</tbody></table></div></div>`;
+function itemRow(b,i=0){return `<tr><td><select class="select select-sm">${MEDS.map((m,j)=>`<option ${j===i?'selected':''}>${m.name}</option>`).join('')}</select></td>${b?`<td><input class="input select-sm" style="width:90px" value="${MEDS[i].batch}"></td><td><input class="input select-sm" type="date" value="${iso(addDays(540))}"></td>`:''}<td><input class="input select-sm" type="number" value="${[100,50,0,200][i]||100}" style="width:70px"></td><td><input class="input select-sm" type="number" value="${MEDS[i].cost}" style="width:80px"></td><td><button type="button" class="icon-btn" style="width:28px;height:28px" onclick="this.closest('tr').remove()">${ic('x',14)}</button></td></tr>`}
+F.po={title:'Purchase Order',wide:1,fields:[{l:'Supplier',k:'supplier',t:'select',o:SUPPLIERS.map(s=>s.name)},{l:'Order Date',k:'date',t:'date',v:iso(TODAY)},{l:'Expected Delivery',k:'expected',t:'date',v:iso(addDays(7))},{l:'Status',k:'status',t:'select',o:['Draft','Ordered','Partial','Received','Cancelled']},{l:'Notes',t:'textarea',full:1}],extra:itemsTable(false)};
+F.grn={title:'Goods Received Note',wide:1,fields:[{l:'Purchase Order',k:'po',t:'select',o:PURCHASES.map(p=>p.no)},{l:'Supplier',k:'supplier',t:'select',o:SUPPLIERS.map(s=>s.name)},{l:'Supplier Invoice No.',k:'inv'},{l:'Received Date',k:'date',t:'date',v:iso(TODAY)}],extra:itemsTable(true)};
+
+/* ================= PAGES ================= */
+const PAGES={};
+
+PAGES['dashboard']=()=>{
+  const top=[...MEDS].sort((a,b)=>b.sold*b.price-a.sold*a.price).slice(0,5);
+  const alerts=MEDS.filter(m=>{const d=daysLeft(m.exp);return d>=0&&d<=90}).sort((a,b)=>a.exp-b.exp).slice(0,4);
+  const recent=[[SALES[0].no,'Sale',SALES[0].total,'file','blue'],[SALES[1].no,'Sale',SALES[1].total,'file','blue'],[PURCHASES[0].no,'Purchase',PURCHASES[0].total,'cart','green'],[PAYMENTS[0].no,'Payment',PAYMENTS[0].amount,'wallet','purple'],[SALES[2].no,'Sale',SALES[2].total,'file','blue']];
+  AFTER=()=>{$('#rangeSel').onchange=e=>{DRAW()}};
+  DRAW=()=>{const s=SERIES[$('#rangeSel').value];lineChart($('#salesChart'),s.labels,s.values)};
+  return `${pageHead('Dashboard','',`<button class="btn btn-light">${ic('cal',16)} ${fmtL(TODAY)}</button><a class="btn btn-primary" href="#/sales/pos">${ic('plus',16)} New Sale</a>`)}
+  <div class="grid-stats">
+   ${statCard({t:'blue',i:'cart',l:'Total Sales',v:'$45,250.00',d:'↑ 12.5% <span>from last month</span>'})}
+   ${statCard({t:'green',i:'bag',l:'Total Purchases',v:'$22,680.00',d:'↑ 8.3% <span>from last month</span>'})}
+   ${statCard({t:'purple',i:'trend',l:'Total Profit',v:'$22,570.00',d:'↑ 15.7% <span>from last month</span>'})}
+   ${statCard({t:'orange',i:'users',l:'Total Customers',v:'1,245',d:'↑ 6.2% <span>from last month</span>'})}
+   ${statCard({t:'red',i:'alert',l:'Low Stock Items',v:'23',d:'↑ 3 <span>since yesterday</span>',down:1})}
+  </div>
+  <div class="grid-dash">
+   <div class="card"><div class="card-head"><h3>Sales Overview</h3><select class="select select-sm" id="rangeSel"><option value="30">Last 30 Days</option><option value="7">Last 7 Days</option><option value="12">Last 12 Months</option></select></div><div class="chart-box" id="salesChart"></div></div>
+   <div class="card"><div class="card-head"><h3>Top Selling Medicines</h3><a class="link" href="#/reports/sales">View All</a></div>
+    <div class="table-wrap" style="padding:0 8px 10px"><table class="table compact plain"><thead><tr><th>Medicine</th><th class="t-right">Qty</th><th class="t-right">Sales</th></tr></thead><tbody>
+    ${top.map((m,i)=>`<tr><td><div class="cell-main">${thumb('pill',['blue','green','purple','orange','teal'][i])}<b style="font-weight:500">${m.name}</b></div></td><td class="t-right muted">${num(m.sold)}</td><td class="t-right fw6">${money(m.sold*m.price)}</td></tr>`).join('')}</tbody></table></div></div>
+   <div class="card"><div class="card-head"><h3>Stock Summary</h3><a class="link" href="#/inventory/stock">Details</a></div>
+    <div class="donut-wrap">${donut([{label:'In Stock',value:768,color:'#16a34a'},{label:'Low Stock',value:23,color:'#f59e0b'},{label:'Out of Stock',value:9,color:'#ef4444'},{label:'Expiring Soon',value:56,color:'#7c3aed'}],'Total','856')}</div></div>
+  </div>
+  <div class="grid-dash">
+   <div class="card"><div class="card-head"><h3>Expiry Alerts</h3><a class="link" href="#/inventory/expiry">View All</a></div>
+    <div class="mini-list" style="padding:4px 18px 14px">${alerts.map(m=>{const d=daysLeft(m.exp);return `<div class="row"><span style="color:var(--red)">${ic('alert',16)}</span><span class="grow fw6" style="font-weight:500">${m.name}</span><span class="faint" style="width:92px">Batch: ${m.batch}</span><span class="muted" style="width:80px">${fmtD(m.exp)}</span><span class="left-tag" style="color:${d<=30?'var(--red)':'var(--orange)'}">${d}<br>Left</span></div>`}).join('')}</div></div>
+   <div class="card"><div class="card-head"><h3>Recent Transactions</h3><a class="link" href="#/sales/invoices">View All</a></div>
+    <div class="mini-list" style="padding:4px 18px 14px">${recent.map((r,i)=>`<div class="row"><span class="tone-${r[4]}" style="width:28px;height:28px;border-radius:7px;display:grid;place-items:center">${ic(r[3],14)}</span><span class="grow fw6" style="font-weight:500">${r[0]}</span><span class="muted" style="width:70px">${r[1]}</span><span class="fw6" style="width:80px">${money(r[2])}</span><span class="faint" style="width:84px;text-align:right">${fmtL(addDays(-Math.floor(i/2)))}</span></div>`).join('')}</div></div>
+   <div class="card"><div class="card-head"><h3>Payment Overview</h3><a class="link" href="#/accounting/payments">Details</a></div>
+    <div class="donut-wrap">${donut([{label:'Total Received',value:28450,color:'#16a34a',display:'$28,450'},{label:'Pending',value:12300,color:'#f97316',display:'$12,300'},{label:'Overdue',value:4500,color:'#ef4444',display:'$4,500'}],'Received','$28,450')}</div></div>
+  </div>
+  <div class="card"><div class="card-head"><h3>Business Summary</h3><span class="muted" style="font-size:12px">This month</span></div>
+   <div class="summary-grid">
+    ${[['dollar','blue','Total Revenue','$45,250.00','↑ 12.5%'],['bag','green','Total Expenses','$22,680.00','↑ 8.3%'],['trend','purple','Net Profit','$22,570.00','↑ 15.7%'],['percent','orange','Gross Margin','49.9%','↑ 6.1%'],['cart','teal','Total Transactions','324','↑ 9.2%']].map(s=>`<div class="sum-tile tone-${s[1]}"><span class="stat-icon">${ic(s[0],20)}</span><div style="color:var(--text)"><small>${s[2]}</small><b>${s[3]}</b><span class="delta">${s[4]}</span></div></div>`).join('')}
+   </div></div>`;
+};
+
+/* ---------- POS ---------- */
+let cart=[],posCat='All',payMethod='Cash',invNo=124,discount=0,tendered='';
+const TAX=0.05;
+function posTotals(){const sub=cart.reduce((a,c)=>a+c.qty*c.price,0),disc=sub*discount/100,tax=(sub-disc)*TAX;return {sub,disc,tax,total:sub-disc+tax}}
+function posProducts(q=''){q=q.toLowerCase();const list=MEDS.filter(m=>(posCat==='All'||m.cat===posCat)&&(!q||(m.name+' '+m.generic+' '+m.batch).toLowerCase().includes(q)));
+  return list.length?list.map(m=>`<button class="prod" data-add="${m.id}" ${m.stock?'':'disabled'}><div class="prod-top"><span class="thumb tone-blue" style="width:32px;height:32px;border-radius:8px;display:grid;place-items:center">${ic('pill',16)}</span>${badge(stockStatus(m))}</div><b>${m.name}</b><small>${m.generic} · ${m.form}</small><div class="prod-top"><span class="price">${money(m.price)}</span><small>${m.stock} left</small></div></button>`).join(''):`<div class="empty" style="grid-column:1/-1">No medicines match your search.</div>`}
+function cartItemsHTML(){return cart.length?cart.map(c=>`<div class="cart-row"><span class="thumb tone-blue" style="width:34px;height:34px;border-radius:8px;display:grid;place-items:center">${ic('pill',16)}</span><div class="grow"><b>${c.name}</b><small>${money(c.price)} × ${c.qty}</small></div><div class="qty"><button data-q="${c.id}" data-d="-1">${ic('minus',14)}</button><span>${c.qty}</span><button data-q="${c.id}" data-d="1">${ic('plus',14)}</button></div><b style="width:64px;text-align:right">${money(c.qty*c.price)}</b><button class="icon-btn" style="width:28px;height:28px;color:var(--red)" data-rm="${c.id}">${ic('trash',14)}</button></div>`).join(''):`<div class="empty">${ic('cart',36,1.4)}<p style="margin-top:8px">Cart is empty.<br>Click a medicine to add it.</p></div>`}
+function updateTotals(){const t=posTotals(),chg=tendered!==''?Number(tendered)-t.total:null;
+  $('#posTotals').innerHTML=`<div class="r"><span class="muted">Subtotal (${cart.reduce((a,c)=>a+c.qty,0)} items)</span><span>${money(t.sub)}</span></div><div class="r"><span class="muted">Discount (${discount}%)</span><span>− ${money(t.disc)}</span></div><div class="r"><span class="muted">Tax (5%)</span><span>${money(t.tax)}</span></div><div class="r grand"><span>Total</span><span style="color:var(--primary)">${money(t.total)}</span></div>${chg!==null?`<div class="r"><span class="muted">Change</span><span class="fw6" style="color:${chg<0?'var(--red)':'var(--green)'}">${money(chg)}</span></div>`:''}`}
+function renderCart(){$('#cartItems').innerHTML=cartItemsHTML();$('#cartCount').textContent=cart.length;updateTotals()}
+PAGES['sales/pos']=()=>{
+  AFTER=()=>{
+    $('#posGrid').onclick=e=>{const b=e.target.closest('[data-add]');if(!b)return;const m=MEDS.find(x=>x.id==b.dataset.add),c=cart.find(x=>x.id===m.id);
+      if(c){if(c.qty>=m.stock)return toast('Not enough stock for '+m.name,1);c.qty++}else cart.push({id:m.id,name:m.name,price:m.price,qty:1});renderCart()};
+    $('#cartItems').onclick=e=>{const q=e.target.closest('[data-q]'),r=e.target.closest('[data-rm]');
+      if(q){const c=cart.find(x=>x.id==q.dataset.q),m=MEDS.find(x=>x.id===c.id);c.qty+=+q.dataset.d;if(c.qty>m.stock){c.qty=m.stock;toast('Max stock reached',1)}if(c.qty<=0)cart=cart.filter(x=>x!==c);renderCart()}
+      if(r){cart=cart.filter(x=>x.id!=r.dataset.rm);renderCart()}};
+    $('#posSearch').oninput=e=>$('#posGrid').innerHTML=posProducts(e.target.value);
+    $('#posChips').onclick=e=>{const c=e.target.closest('.chip');if(!c)return;posCat=c.dataset.cat;$$('.chip',$('#posChips')).forEach(x=>x.classList.toggle('on',x===c));$('#posGrid').innerHTML=posProducts($('#posSearch').value)};
+    $('#payM').onclick=e=>{const b=e.target.closest('button');if(!b)return;payMethod=b.dataset.m;$$('#payM button').forEach(x=>x.classList.toggle('on',x===b))};
+    $('#disc').oninput=e=>{discount=Math.min(100,Math.max(0,+e.target.value||0));updateTotals()};
+    $('#tend').oninput=e=>{tendered=e.target.value;updateTotals()};
+    $('#clearCart').onclick=()=>{cart=[];renderCart()};
+    $('#holdSale').onclick=()=>{if(!cart.length)return toast('Cart is empty',1);toast(`Sale INV-${String(invNo).padStart(5,'0')} put on hold`)};
+    $('#payBtn').onclick=completeSale;
+    updateTotals();
+  };
+  return `${pageHead('Point of Sale','Sales / Point of Sale',`<a class="btn btn-light" href="#/sales/invoices">${ic('file',16)} Sales History</a><a class="btn btn-light" href="#/sales/returns">${ic('undo',16)} Returns</a>`)}
+  <div class="pos">
+   <div class="card">
+    <div class="toolbar" style="border:0"><label class="search-input" style="flex:1;width:auto">${ic('search',16)}<input id="posSearch" placeholder="Search by medicine name, generic or batch..." autofocus></label><button class="btn btn-light">${ic('scan',16)} Scan Barcode</button></div>
+    <div class="chips" id="posChips">${['All',...CATS].map(c=>`<button class="chip ${c===posCat?'on':''}" data-cat="${c}">${c}</button>`).join('')}</div>
+    <div class="prod-grid" id="posGrid" style="border-top:1px solid var(--border)">${posProducts()}</div>
+   </div>
+   <div class="card">
+    <div class="card-head" style="padding-bottom:12px;border-bottom:1px solid var(--border)"><h3>Current Sale <span class="badge b-blue" id="cartCount" style="margin-left:6px">${cart.length}</span></h3><span class="muted" style="font-size:12px">INV-${String(invNo).padStart(5,'0')}</span></div>
+    <div style="padding:12px 16px;display:flex;gap:8px"><select class="select" id="posCust" style="flex:1"><option>Walk-in Customer</option>${CUSTOMERS.map(c=>`<option>${c.name}</option>`).join('')}</select><button class="btn btn-light" style="padding:0 10px" title="Add customer" onclick="openForm(F.customer)">${ic('plus',16)}</button></div>
+    <div class="cart-items" id="cartItems">${cartItemsHTML()}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 0"><div class="field"><label>Discount (%)</label><input class="input" id="disc" type="number" min="0" max="100" value="${discount}" style="width:100%"></div><div class="field"><label>Amount Tendered</label><input class="input" id="tend" type="number" placeholder="0.00" value="${tendered}" style="width:100%"></div></div>
+    <div class="totals" id="posTotals" style="border:0"></div>
+    <div class="pay-methods" id="payM">${[['Cash','cash'],['Card','card'],['Mobile Money','phone'],['Insurance','shield']].map(m=>`<button data-m="${m[0]}" class="${payMethod===m[0]?'on':''}">${ic(m[1],18)}${m[0]}</button>`).join('')}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 10px"><button class="btn btn-light btn-block" id="holdSale">${ic('pause',16)} Hold</button><button class="btn btn-light btn-block" id="clearCart" style="color:var(--red)">${ic('trash',16)} Clear</button></div>
+    <div style="padding:0 16px 16px"><button class="btn btn-success btn-block" id="payBtn" style="height:46px;font-size:14px">${ic('check',18)} Complete Sale</button></div>
+   </div>
+  </div>`;
+};
+function completeSale(){
+  if(!cart.length)return toast('Add at least one item to the cart',1);
+  const t=posTotals();if(payMethod==='Cash'&&tendered!==''&&Number(tendered)<t.total)return toast('Amount tendered is less than total',1);
+  const no='INV-'+String(invNo).padStart(5,'0'),cust=$('#posCust').value;
+  cart.forEach(c=>{const m=MEDS.find(x=>x.id===c.id);m.stock-=c.qty;m.sold+=c.qty});
+  SALES.unshift({no,customer:cust,date:TODAY,items:cart.length,total:+t.total.toFixed(2),paid:+t.total.toFixed(2),method:payMethod,status:'Paid',cashier:'Godfrey D.'});
+  openModal('Sale Completed',receiptHTML(no,cust,cart,t),`<button class="btn btn-light" data-close>New Sale</button><button class="btn btn-primary" onclick="window.print()">${ic('printer',16)} Print Receipt</button>`);
+  cart=[];discount=0;tendered='';invNo++;
+  $('#disc').value=0;$('#tend').value='';$('#posGrid').innerHTML=posProducts($('#posSearch').value);renderCart();
+  $('.card-head span.muted',$('.pos')).textContent='INV-'+String(invNo).padStart(5,'0');
+  toast(`${no} saved · ${money(t.total)} via ${payMethod}`);
+}
+function receiptHTML(no,cust,items,t){
+  return `<div class="invoice-doc" style="max-width:380px;margin:auto;text-align:center"><div style="display:flex;justify-content:center">${LOGO(40)}</div><b style="display:block;margin-top:6px">Pharmacy Management System</b><small class="muted">Main Branch · +255 222 000 111</small>
+  <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:12px" class="muted"><span>${no}</span><span>${fmtL(TODAY)}</span></div><div style="text-align:left;font-size:12px" class="muted">Customer: ${esc(cust)} · ${payMethod}</div>
+  <table><thead><tr><th>Item</th><th class="t-right">Qty</th><th class="t-right">Amount</th></tr></thead><tbody>${items.map(c=>`<tr><td style="text-align:left">${c.name}</td><td class="t-right">${c.qty}</td><td class="t-right">${money(c.qty*c.price)}</td></tr>`).join('')}</tbody></table>
+  <div class="inv-totals" style="width:100%"><div class="r"><span class="muted">Subtotal</span><span>${money(t.sub)}</span></div><div class="r"><span class="muted">Discount</span><span>− ${money(t.disc)}</span></div><div class="r"><span class="muted">Tax</span><span>${money(t.tax)}</span></div><div class="r fw6" style="font-size:16px;border-top:1px dashed var(--border);padding-top:8px"><span>Total</span><span>${money(t.total)}</span></div></div>
+  <p class="muted" style="margin-top:14px;font-size:12px">Thank you! Get well soon.</p></div>`;
+}
+function invoiceLines(s){const n=Math.max(1,s.items),start=parseInt(s.no.slice(-3))%20;const lines=Array.from({length:n},(_,i)=>{const m=MEDS[(start+i*3)%20];return {name:m.name,batch:m.batch,qty:1+((start+i)%4),price:m.price}});return lines}
+function viewInvoice(s){
+  const lines=invoiceLines(s),sub=lines.reduce((a,l)=>a+l.qty*l.price,0);
+  openModal('Invoice '+s.no,`<div class="invoice-doc"><div class="top"><div style="display:flex;gap:10px;align-items:center">${LOGO(40)}<div><b>Pharmacy Management System</b><div class="muted" style="font-size:12px">Plot 12, Samora Ave, Dar es Salaam<br>TIN: 123-456-789 · +255 222 000 111</div></div></div><div style="text-align:right"><h2 style="font-size:20px;color:var(--primary)">INVOICE</h2><div class="muted" style="font-size:12px">${s.no}<br>Date: ${fmtL(s.date)}</div>${badge(s.status)}</div></div>
+  <div class="muted" style="font-size:12px">Bill To</div><b>${esc(s.customer)}</b>
+  <table><thead><tr><th>#</th><th>Medicine</th><th>Batch</th><th class="t-right">Qty</th><th class="t-right">Price</th><th class="t-right">Amount</th></tr></thead><tbody>${lines.map((l,i)=>`<tr><td>${i+1}</td><td>${l.name}</td><td class="muted">${l.batch}</td><td class="t-right">${l.qty}</td><td class="t-right">${money(l.price)}</td><td class="t-right">${money(l.qty*l.price)}</td></tr>`).join('')}</tbody></table>
+  <div class="inv-totals"><div class="r"><span class="muted">Subtotal</span><span>${money(sub)}</span></div><div class="r"><span class="muted">Tax (5%)</span><span>${money(sub*TAX)}</span></div><div class="r fw6" style="font-size:15px"><span>Total</span><span>${money(sub*1.05)}</span></div><div class="r"><span class="muted">Payment</span><span>${s.method}</span></div></div></div>`,
+  `<button class="btn btn-light" data-close>Close</button><button class="btn btn-light" onclick="toast('Invoice sent to customer')">${ic('upload',16)} Send</button><button class="btn btn-primary" onclick="window.print()">${ic('printer',16)} Print</button>`,1);
+}
+
+PAGES['sales/invoices']=()=>tablePage({title:'Sales Invoices',crumbs:'Sales / Invoices',ph:'invoice, customer',
+  extra:`<a class="btn btn-light" href="#/sales/returns">${ic('undo',16)} Returns</a>`,add:'New Sale',onAdd:()=>location.hash='#/sales/pos',view:viewInvoice,actions:['view','print','delete'],
+  stats:[{t:'blue',i:'receipt',l:"Today's Sales",v:money(SALES.filter(s=>daysLeft(s.date)===0).reduce((a,s)=>a+s.total,0)),d:'↑ 4.2% <span>vs yesterday</span>'},{t:'green',i:'check',l:'Paid Invoices',v:SALES.filter(s=>s.status==='Paid').length},{t:'orange',i:'clock',l:'Pending / Partial',v:SALES.filter(s=>['Pending','Partial'].includes(s.status)).length},{t:'purple',i:'wallet',l:'Outstanding',v:money(SALES.reduce((a,s)=>a+(s.status==='Cancelled'?0:s.total-s.paid),0))}],
+  filters:[['All Status',['Paid','Partial','Pending','Cancelled']],['All Methods',METHODS]],
+  cols:[{h:'Invoice No.',f:r=>cellMain('file','blue',r.no,r.items+' items')},{h:'Customer',k:'customer'},{h:'Date',f:r=>fmtL(r.date)},{h:'Cashier',k:'cashier'},{h:'Method',k:'method'},{h:'Total',f:r=>`<b>${money(r.total)}</b>`,c:'t-right'},{h:'Paid',f:r=>money(r.paid),c:'t-right'},{h:'Status',f:r=>badge(r.status)}],rows:SALES});
+PAGES['sales/returns']=()=>tablePage({title:'Sales Returns',crumbs:'Sales / Returns',ph:'return, invoice, medicine',add:'New Return',form:F.sreturn,
+  stats:[{t:'red',i:'undo',l:'Returns This Month',v:SRETURNS.length},{t:'orange',i:'wallet',l:'Refunded Amount',v:money(SRETURNS.reduce((a,r)=>a+r.amount,0))},{t:'amber',i:'clock',l:'Pending Approval',v:SRETURNS.filter(r=>r.status==='Pending').length},{t:'blue',i:'percent',l:'Return Rate',v:'1.8%'}],
+  filters:[['All Status',['Refunded','Pending']]],
+  cols:[{h:'Return No.',f:r=>cellMain('undo','red',r.no)},{h:'Invoice',k:'inv'},{h:'Customer',k:'customer'},{h:'Medicine',k:'med'},{h:'Qty',k:'qty',c:'t-right'},{h:'Amount',f:r=>money(r.amount),c:'t-right'},{h:'Reason',k:'reason'},{h:'Date',f:r=>fmtL(r.date)},{h:'Status',f:r=>badge(r.status)}],rows:SRETURNS});
+
+PAGES['purchase/orders']=()=>tablePage({title:'Purchase Orders',crumbs:'Purchase / Orders',ph:'PO number, supplier',add:'New Purchase Order',form:F.po,
+  stats:[{t:'green',i:'bag',l:'Total Purchases',v:money(PURCHASES.filter(p=>p.status!=='Cancelled').reduce((a,p)=>a+p.total,0)),d:'↑ 8.3% <span>from last month</span>'},{t:'blue',i:'truck',l:'Open Orders',v:PURCHASES.filter(p=>['Ordered','Pending','Partial'].includes(p.status)).length},{t:'purple',i:'check',l:'Received',v:PURCHASES.filter(p=>p.status==='Received').length},{t:'orange',i:'wallet',l:'Amount Due',v:money(PURCHASES.filter(p=>p.status!=='Cancelled').reduce((a,p)=>a+p.total-p.paid,0))}],
+  filters:[['All Status',['Received','Ordered','Partial','Pending','Cancelled']],['All Suppliers',SUPPLIERS.map(s=>s.name)]],
+  cols:[{h:'PO Number',f:r=>cellMain('cart','green',r.no,r.items+' items')},{h:'Supplier',k:'supplier'},{h:'Order Date',f:r=>fmtL(r.date)},{h:'Expected',f:r=>fmtL(r.expected)},{h:'Total',f:r=>`<b>${money(r.total)}</b>`,c:'t-right'},{h:'Paid',f:r=>money(r.paid),c:'t-right'},{h:'Status',f:r=>badge(r.status)}],rows:PURCHASES});
+PAGES['purchase/grn']=()=>tablePage({title:'Goods Received',crumbs:'Purchase / Goods Received (GRN)',ph:'GRN, PO, supplier',add:'Receive Goods',form:F.grn,
+  stats:[{t:'green',i:'box',l:'GRNs This Month',v:GRNS.length},{t:'blue',i:'wallet',l:'Value Received',v:money(GRNS.reduce((a,g)=>a+g.total,0))},{t:'orange',i:'clock',l:'Partially Received',v:GRNS.filter(g=>g.status==='Partial').length},{t:'purple',i:'truck',l:'Awaiting Delivery',v:PURCHASES.filter(p=>p.status==='Ordered').length}],
+  cols:[{h:'GRN No.',f:r=>cellMain('box','teal',r.no)},{h:'PO Ref',k:'po'},{h:'Supplier',k:'supplier'},{h:'Supplier Invoice',k:'inv'},{h:'Received',f:r=>fmtL(r.date)},{h:'Items',k:'items',c:'t-right'},{h:'Value',f:r=>money(r.total),c:'t-right'},{h:'Received By',k:'by'},{h:'Status',f:r=>badge(r.status)}],rows:GRNS});
+PAGES['purchase/returns']=()=>tablePage({title:'Purchase Returns',crumbs:'Purchase / Returns',ph:'return, supplier, medicine',add:'New Return',form:F.preturn,
+  filters:[['All Status',['Approved','Pending','Rejected']],['All Reasons',['Expired','Near expiry','Damaged','Wrong batch','Recalled']]],
+  cols:[{h:'Return No.',f:r=>cellMain('undo','orange',r.no)},{h:'Supplier',k:'supplier'},{h:'GRN Ref',k:'ref'},{h:'Medicine',k:'med'},{h:'Batch',k:'batch'},{h:'Qty',k:'qty',c:'t-right'},{h:'Amount',f:r=>money(r.amount),c:'t-right'},{h:'Reason',k:'reason'},{h:'Date',f:r=>fmtL(r.date)},{h:'Status',f:r=>badge(r.status)}],rows:PRETURNS});
+
+PAGES['inventory/stock']=()=>tablePage({title:'Stock List',crumbs:'Inventory / Stock',ph:'medicine, batch, category',add:'Add Stock',form:F.stock,
+  extra:`<a class="btn btn-light" href="#/inventory/adjustments">${ic('clip',16)} Adjust Stock</a>`,
+  stats:[{t:'blue',i:'box',l:'Total Items',v:num(MEDS.length)},{t:'green',i:'wallet',l:'Stock Value (Cost)',v:money(MEDS.reduce((a,m)=>a+m.stock*m.cost,0))},{t:'amber',i:'alert',l:'Low Stock',v:MEDS.filter(m=>stockStatus(m)==='Low Stock').length},{t:'red',i:'x',l:'Out of Stock',v:MEDS.filter(m=>m.stock===0).length}],
+  filters:[['All Categories',CATS],['All Status',['In Stock','Low Stock','Out of Stock']]],
+  cols:[{h:'Medicine',f:r=>cellMain('pill','blue',r.name,r.generic)},{h:'Category',k:'cat'},{h:'Batch',k:'batch'},{h:'Expiry',f:r=>`<span style="color:${daysLeft(r.exp)<0?'var(--red)':daysLeft(r.exp)<=90?'var(--orange)':'inherit'}">${fmtD(r.exp)}</span>`},{h:'Qty',f:r=>`<b>${num(r.stock)}</b>`,c:'t-right'},{h:'Reorder',k:'reorder',c:'t-right'},{h:'Cost',f:r=>money(r.cost),c:'t-right'},{h:'Price',f:r=>money(r.price),c:'t-right'},{h:'Status',f:r=>badge(stockStatus(r))}],rows:MEDS});
+PAGES['inventory/expiry']=()=>{const rows=[...MEDS].sort((a,b)=>a.exp-b.exp);const c=(lo,hi)=>MEDS.filter(m=>{const d=daysLeft(m.exp);return d>=lo&&d<=hi}).length;
+  return tablePage({title:'Expiry Management',crumbs:'Inventory / Expiry',ph:'medicine, batch',actions:['view','delete'],
+  extra:`<button class="btn btn-light" onclick="location.hash='#/purchase/returns'">${ic('undo',16)} Return to Supplier</button>`,
+  stats:[{t:'red',i:'x',l:'Expired',v:c(-9999,-1)},{t:'orange',i:'alert',l:'Expiring ≤ 30 days',v:c(0,30)},{t:'amber',i:'clock',l:'Expiring 31–90 days',v:c(31,90)},{t:'green',i:'check',l:'Safe (> 90 days)',v:c(91,99999)}],
+  filters:[['All Status',['Expired','Expiring Soon','Good']],['All Categories',CATS]],
+  cols:[{h:'Medicine',f:r=>cellMain('pill',daysLeft(r.exp)<0?'red':daysLeft(r.exp)<=90?'orange':'green',r.name,r.generic)},{h:'Batch',k:'batch'},{h:'Category',k:'cat'},{h:'Supplier / Mfr',k:'mfr'},{h:'Qty',k:'stock',c:'t-right'},{h:'Value',f:r=>money(r.stock*r.cost),c:'t-right'},{h:'Expiry Date',f:r=>fmtD(r.exp)},{h:'Days Left',f:r=>{const d=daysLeft(r.exp);return `<b style="color:${d<0?'var(--red)':d<=30?'var(--red)':d<=90?'var(--orange)':'var(--green)'}">${d<0?Math.abs(d)+' days ago':d+' days'}</b>`}},{h:'Status',f:r=>badge(expStatus(r))}],rows})};
+PAGES['inventory/adjustments']=()=>tablePage({title:'Stock Adjustments',crumbs:'Inventory / Adjustments',ph:'adjustment, medicine',add:'New Adjustment',form:F.adjust,
+  filters:[['All Types',['Increase','Decrease','Damage','Expired Write-off','Count Correction','Theft/Loss']],['All Status',['Approved','Pending']]],
+  cols:[{h:'Ref No.',f:r=>cellMain('clip','purple',r.no)},{h:'Medicine',k:'med'},{h:'Batch',k:'batch'},{h:'Type',k:'type'},{h:'Qty',f:r=>`<b style="color:${r.qty<0?'var(--red)':'var(--green)'}">${r.qty>0?'+':''}${r.qty}</b>`,c:'t-right'},{h:'Reason',k:'reason'},{h:'By',k:'by'},{h:'Date',f:r=>fmtL(r.date)},{h:'Status',f:r=>badge(r.status)}],rows:ADJUST});
+
+PAGES['customers']=()=>tablePage({title:'Customers',crumbs:'Customers',ph:'name, phone, email',add:'Add Customer',form:F.customer,
+  stats:[{t:'blue',i:'users',l:'Total Customers',v:'1,245',d:'↑ 6.2% <span>this month</span>'},{t:'green',i:'user',l:'New This Month',v:'48'},{t:'purple',i:'shield',l:'Insurance Clients',v:'312'},{t:'orange',i:'wallet',l:'Receivables',v:money(CUSTOMERS.reduce((a,c)=>a+c.balance,0))}],
+  filters:[['All Types',['Retail','Wholesale','Insurance']],['All Status',['Active','Inactive']]],
+  cols:[{h:'Customer',f:r=>`<div class="cell-main"><span class="avatar" style="width:34px;height:34px;font-size:12px">${r.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</span><div><b>${esc(r.name)}</b><small>${r.code}</small></div></div>`},{h:'Phone',k:'phone'},{h:'Email',k:'email'},{h:'Type',f:r=>badge(r.type)},{h:'Total Spent',f:r=>money(r.spent),c:'t-right'},{h:'Balance',f:r=>`<span style="color:${r.balance?'var(--red)':'inherit'}">${money(r.balance)}</span>`,c:'t-right'},{h:'Last Visit',f:r=>fmtL(r.last)},{h:'Status',f:r=>badge(r.status)}],rows:CUSTOMERS});
+PAGES['suppliers']=()=>tablePage({title:'Suppliers',crumbs:'Suppliers',ph:'supplier, contact, phone',add:'Add Supplier',form:F.supplier,
+  stats:[{t:'blue',i:'truck',l:'Total Suppliers',v:SUPPLIERS.length},{t:'green',i:'check',l:'Active',v:SUPPLIERS.filter(s=>s.status==='Active').length},{t:'orange',i:'wallet',l:'Payables',v:money(SUPPLIERS.reduce((a,s)=>a+s.balance,0))},{t:'purple',i:'bag',l:'Orders This Month',v:PURCHASES.length}],
+  filters:[['All Status',['Active','Inactive']],['All Terms',['COD','Net 15','Net 30','Net 45','Net 60']]],
+  cols:[{h:'Supplier',f:r=>cellMain('building','teal',r.name,r.code)},{h:'Contact Person',k:'contact'},{h:'Phone',k:'phone'},{h:'Email',k:'email'},{h:'Terms',k:'terms'},{h:'Balance Due',f:r=>money(r.balance),c:'t-right'},{h:'Status',f:r=>badge(r.status)}],rows:SUPPLIERS});
+
+PAGES['accounting/expenses']=()=>{const byCat=EXP_CATS.map(c=>[c,EXPENSES.filter(e=>e.cat===c).reduce((a,e)=>a+e.amount,0)]).sort((a,b)=>b[1]-a[1]),mx=byCat[0][1];
+  return tablePage({title:'Expenses',crumbs:'Accounting / Expenses',ph:'expense, category',add:'Add Expense',form:F.expense,
+  stats:[{t:'red',i:'wallet',l:'Total Expenses',v:money(EXPENSES.reduce((a,e)=>a+e.amount,0)),d:'↑ 8.3% <span>from last month</span>',down:1},{t:'blue',i:'receipt',l:'Transactions',v:EXPENSES.length},{t:'orange',i:'clock',l:'Pending',v:money(EXPENSES.filter(e=>e.status==='Pending').reduce((a,e)=>a+e.amount,0))},{t:'purple',i:'trend',l:'Top Category',v:byCat[0][0]}],
+  above:`<div class="card card-pad" style="margin-bottom:18px"><h3 style="font-size:14.5px;margin-bottom:8px">Expenses by Category</h3>${byCat.map((c,i)=>`<div class="hbar"><span class="lbl">${c[0]}</span><div class="track"><div class="fill" style="width:${c[1]/mx*100}%;background:${['#2463eb','#16a34a','#7c3aed','#f97316','#0891b2','#ef4444','#d97706','#64748b'][i]}"></div></div><span class="v">${money(c[1])}</span></div>`).join('')}</div>`,
+  filters:[['All Categories',EXP_CATS],['All Status',['Paid','Pending']]],
+  cols:[{h:'Ref No.',f:r=>cellMain('receipt','red',r.no)},{h:'Category',k:'cat'},{h:'Description',k:'desc'},{h:'Date',f:r=>fmtL(r.date)},{h:'Method',k:'method'},{h:'Recorded By',k:'by'},{h:'Amount',f:r=>`<b>${money(r.amount)}</b>`,c:'t-right'},{h:'Status',f:r=>badge(r.status)}],rows:EXPENSES})};
+PAGES['accounting/payments']=()=>tablePage({title:'Payments',crumbs:'Accounting / Payments',ph:'payment, party, reference',add:'Record Payment',form:F.payment,
+  stats:[{t:'green',i:'download',l:'Total Received',v:'$28,450.00'},{t:'orange',i:'clock',l:'Pending',v:'$12,300.00'},{t:'red',i:'alert',l:'Overdue',v:'$4,500.00'},{t:'blue',i:'upload',l:'Paid to Suppliers',v:money(PAYMENTS.filter(p=>p.type==='Paid').reduce((a,p)=>a+p.amount,0))}],
+  filters:[['All Types',['Received','Paid']],['All Status',['Completed','Pending','Overdue']]],
+  cols:[{h:'Payment No.',f:r=>cellMain('wallet',r.type==='Received'?'green':'orange',r.no)},{h:'Type',f:r=>`<span style="color:${r.type==='Received'?'var(--green)':'var(--orange)'};font-weight:600">${r.type==='Received'?'↓':'↑'} ${r.type}</span>`},{h:'Party',k:'party'},{h:'Reference',k:'ref'},{h:'Method',k:'method'},{h:'Date',f:r=>fmtL(r.date)},{h:'Amount',f:r=>`<b>${money(r.amount)}</b>`,c:'t-right'},{h:'Status',f:r=>badge(r.status)}],rows:PAYMENTS});
+PAGES['accounting/ledger']=()=>tablePage({title:'General Ledger',crumbs:'Accounting / Ledger',ph:'entry, account',add:'Journal Entry',actions:['view'],
+  form:{title:'Journal Entry',fields:[{l:'Date',t:'date',v:iso(TODAY)},{l:'Reference'},{l:'Debit Account',t:'select',o:['Cash Account','Bank Account','Mobile Money','Accounts Receivable','Inventory','Rent Expense','Utilities','Salaries']},{l:'Credit Account',t:'select',o:['Sales Revenue','Accounts Payable','Cash Account','Bank Account','Capital']},{l:'Amount ($)',t:'number'},{l:'Description',t:'textarea',full:1}]},
+  stats:[{t:'green',i:'cash',l:'Cash in Hand',v:'$6,842.30'},{t:'blue',i:'building',l:'Bank Balance',v:'$24,610.75'},{t:'purple',i:'download',l:'Receivables',v:money(CUSTOMERS.reduce((a,c)=>a+c.balance,0))},{t:'orange',i:'upload',l:'Payables',v:money(SUPPLIERS.reduce((a,s)=>a+s.balance,0))}],
+  filters:[['All Types',['Sales','Purchase','Expense','Receipt','Payment']]],
+  cols:[{h:'Entry',f:r=>cellMain('book','blue',r.no)},{h:'Date',f:r=>fmtD(r.date)},{h:'Type',k:'type'},{h:'Account',k:'account'},{h:'Description',k:'desc'},{h:'Debit',f:r=>r.debit?`<span style="color:var(--green)">${money(r.debit)}</span>`:'—',c:'t-right'},{h:'Credit',f:r=>r.credit?`<span style="color:var(--red)">${money(r.credit)}</span>`:'—',c:'t-right'},{h:'Balance',f:r=>`<b>${money(r.balance)}</b>`,c:'t-right'}],rows:LEDGER});
+
+/* ---------- Master data ---------- */
+PAGES['master/medicines']=()=>tablePage({title:'Medicines',crumbs:'Master Data / Medicines',ph:'name, generic, code',add:'Add Medicine',form:F.medicine,
+  extra:`<button class="btn btn-light" onclick="toast('Import template downloaded')">${ic('upload',16)} Import</button>`,
+  filters:[['All Categories',CATS],['All Forms',FORMS]],
+  cols:[{h:'Medicine',f:r=>cellMain('pill','blue',r.name,r.code)},{h:'Generic Name',k:'generic'},{h:'Category',k:'cat'},{h:'Form',k:'form'},{h:'Manufacturer',k:'mfr'},{h:'Cost',f:r=>money(r.cost),c:'t-right'},{h:'Price',f:r=>money(r.price),c:'t-right'},{h:'Margin',f:r=>((r.price-r.cost)/r.price*100).toFixed(0)+'%',c:'t-right'},{h:'Rx',f:r=>r.rx==='Yes'?'<span class="badge b-purple">Rx</span>':'<span class="badge b-gray">OTC</span>'}],rows:MEDS});
+PAGES['master/categories']=()=>tablePage({title:'Categories',crumbs:'Master Data / Categories',ph:'category',add:'Add Category',form:F.category,
+  cols:[{h:'Category',f:r=>cellMain('layers','purple',r.name,r.code)},{h:'Description',k:'desc'},{h:'Medicines',k:'count',c:'t-right'},{h:'Status',f:r=>badge(r.status)}],
+  rows:CATS.map((c,i)=>({name:c,code:'CAT-'+String(i+1).padStart(3,'0'),desc:{Analgesic:'Pain relief & fever',Antibiotic:'Bacterial infections',Antihistamine:'Allergy relief',Antacid:'Acid reflux & ulcers',Antidiabetic:'Blood sugar control',Cardiovascular:'Heart & blood pressure',Respiratory:'Asthma, cough & cold',Supplement:'Vitamins & minerals',Electrolyte:'Rehydration',Antimalarial:'Malaria treatment',Corticosteroid:'Anti-inflammatory steroids',Antifungal:'Fungal infections'}[c]||'',count:MEDS.filter(m=>m.cat===c).length,status:'Active'}))});
+PAGES['master/units']=()=>tablePage({title:'Units & Dosage Forms',crumbs:'Master Data / Units',ph:'unit',add:'Add Unit',form:F.unit,
+  cols:[{h:'Name',f:r=>cellMain('ruler','teal',r.name)},{h:'Abbreviation',k:'abbr'},{h:'Type',k:'type'},{h:'Status',f:r=>badge(r.status)}],
+  rows:[...FORMS.map(f=>({name:f,abbr:f.slice(0,3).toUpperCase(),type:'Dosage Form',status:'Active'})),...[['Strip','STP'],['Box','BOX'],['Bottle','BTL'],['Vial','VL'],['Piece','PC']].map(u=>({name:u[0],abbr:u[1],type:'Pack Unit',status:'Active'}))]});
+PAGES['master/manufacturers']=()=>{const ctry={GSK:'United Kingdom',Cipla:'India','Sun Pharma':'India',"Dr. Reddy's":'India',Pfizer:'USA',Abbott:'USA',Merck:'Germany',Bayer:'Germany',"Nature's Bounty":'USA',Medipharm:'Tanzania',Novartis:'Switzerland',Sandoz:'Switzerland',Sanofi:'France',Benylin:'United Kingdom',Medreich:'India'};
+  return tablePage({title:'Manufacturers',crumbs:'Master Data / Manufacturers',ph:'manufacturer, country',add:'Add Manufacturer',form:F.mfr,
+  cols:[{h:'Manufacturer',f:r=>cellMain('building','orange',r.name)},{h:'Country',k:'country'},{h:'Products',k:'count',c:'t-right'},{h:'Status',f:r=>badge(r.status)}],
+  rows:[...new Set(MEDS.map(m=>m.mfr))].map(n=>({name:n,country:ctry[n]||'—',count:MEDS.filter(m=>m.mfr===n).length,status:'Active'}))})};
+
+/* ---------- Users ---------- */
+const MODULES=['Dashboard','Sales / POS','Purchase','Inventory','Customers','Suppliers','Accounting','Reports','Master Data','User Management','Settings'];
+const ROLE_PRESET={Admin:()=>[1,1,1,1],Pharmacist:i=>i<6||i===7||i===8?[1,1,1,0]:[i===6?1:0,0,0,0],Cashier:i=>i<2||i===4?[1,i===1||i===4?1:0,0,0]:[0,0,0,0],'Store Keeper':i=>[0,2,3,5,8].includes(i)?[1,i>0?1:0,i>0?1:0,0]:[0,0,0,0],Accountant:i=>[0,6,7].includes(i)?[1,1,1,0]:[i===2||i===5?1:0,0,0,0]};
+const permRows=role=>MODULES.map((m,i)=>`<tr><td>${m}</td>${ROLE_PRESET[role](i).map(v=>`<td><input type="checkbox" ${v?'checked':''}></td>`).join('')}</tr>`).join('');
+PAGES['users']=()=>{AFTER=()=>{$('#roleChips').onclick=e=>{const c=e.target.closest('.chip');if(!c)return;$$('#roleChips .chip').forEach(x=>x.classList.toggle('on',x===c));$('#permBody').innerHTML=permRows(c.dataset.role)}};
+  return tablePage({title:'User Management',crumbs:'User Management',ph:'name, username, role',add:'Add User',form:F.user,
+  stats:[{t:'blue',i:'users',l:'Total Users',v:USERS.length},{t:'green',i:'check',l:'Active',v:USERS.filter(u=>u.status==='Active').length},{t:'purple',i:'shield',l:'Roles',v:Object.keys(ROLE_PRESET).length},{t:'orange',i:'building',l:'Branches',v:2}],
+  filters:[['All Roles',Object.keys(ROLE_PRESET)],['All Status',['Active','Inactive']]],
+  cols:[{h:'User',f:r=>`<div class="cell-main"><span class="avatar" style="width:34px;height:34px;font-size:12px">${r.name.split(' ').map(w=>w[0]).join('')}</span><div><b>${esc(r.name)}</b><small>@${r.username}</small></div></div>`},{h:'Email',k:'email'},{h:'Role',f:r=>r.role==='Admin'?badge('Admin'):`<span class="badge b-blue">${r.role}</span>`},{h:'Branch',k:'branch'},{h:'Last Login',f:r=>daysLeft(r.last)===0?'Today':fmtL(r.last)},{h:'Status',f:r=>badge(r.status)}],rows:USERS,
+  below:`<div class="card" style="margin-top:18px"><div class="card-head"><h3>Roles & Permissions</h3><button class="btn btn-primary btn-sm" onclick="toast('Permissions saved')">${ic('check',14)} Save Permissions</button></div>
+   <div class="chips" id="roleChips" style="padding-top:10px">${Object.keys(ROLE_PRESET).map((r,i)=>`<button class="chip ${i===1?'on':''}" data-role="${r}">${r}</button>`).join('')}</div>
+   <div class="table-wrap"><table class="table perm-table"><thead><tr><th>Module</th><th>View</th><th>Create</th><th>Edit</th><th>Delete</th></tr></thead><tbody id="permBody">${permRows('Pharmacist')}</tbody></table></div></div>`})};
+
+/* ---------- Reports ---------- */
+const REPORT_TABS=[['sales','Sales Report'],['purchase','Purchase Report'],['stock','Stock Report'],['profit','Profit & Loss'],['expiry','Expiry Report']];
+function reportsPage(sub){
+  sub=REPORT_TABS.find(t=>t[0]===sub)?sub:'sales';
+  const purch=[16200,17800,16900,19400,20100,18700,21300,22100,20400,21900,22300,22680],exp=[9800,10100,9900,10400,10800,10600,11200,11400,11100,11600,11900,12300];
+  const filt=`<div class="toolbar" style="border:0;padding:16px 18px"><div class="field"><label>From</label><input class="input" type="date" value="${iso(addDays(-29))}"></div><div class="field"><label>To</label><input class="input" type="date" value="${iso(TODAY)}"></div><div class="field"><label>Branch</label><select class="select"><option>All Branches</option><option>Main Branch</option><option>Mbezi Branch</option></select></div><div class="field"><label>&nbsp;</label><button class="btn btn-primary" onclick="toast('Report generated')">${ic('filter',16)} Generate</button></div><div class="spacer"></div><div class="field"><label>&nbsp;</label><div style="display:flex;gap:8px"><button class="btn btn-light" onclick="toast('PDF downloaded')">${ic('download',16)} PDF</button><button class="btn btn-light" data-act="export">${ic('download',16)} Excel</button></div></div></div>`;
+  let body='';CURRENT={title:REPORT_TABS.find(t=>t[0]===sub)[1]};
+  const tbl=(cols,rows)=>`<div class="card"><div class="table-wrap"><table class="table"><thead><tr>${cols.map(c=>`<th class="${c[2]||''}">${c[0]}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td class="${c[2]||''}">${c[1](r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+  const legend=s=>`<div class="legend-inline">${s.map(x=>`<span><i style="background:${x[1]}"></i>${x[0]}</span>`).join('')}</div>`;
+  if(sub==='sales'){
+    DRAW=()=>barChart($('#rChart'),MONTH_LABELS,[{name:'Sales',color:'#2463eb',values:SERIES['12'].values}]);
+    const days=SERIES['30'].values.slice(-10).map((v,i)=>({d:addDays(i-9),inv:8+Math.round(v/180),items:Math.round(v/4.2),gross:v*1.04,disc:v*.04,net:v})).reverse();
+    body=`<div class="grid-stats c4">${statCard({t:'blue',i:'dollar',l:'Total Sales',v:'$45,250.00',d:'↑ 12.5%'})}${statCard({t:'green',i:'receipt',l:'Invoices',v:'324',d:'↑ 9.2%'})}${statCard({t:'purple',i:'cart',l:'Avg. Sale Value',v:'$139.66',d:'↑ 3.0%'})}${statCard({t:'orange',i:'pill',l:'Items Sold',v:'10,842',d:'↑ 7.4%'})}</div>
+    <div class="grid-21"><div class="card"><div class="card-head"><h3>Monthly Sales</h3>${legend([['Sales','#2463eb']])}</div><div class="chart-box" id="rChart"></div></div>
+    <div class="card"><div class="card-head"><h3>Sales by Payment Method</h3></div><div class="donut-wrap" style="flex-direction:column">${donut([{label:'Cash',value:18100,color:'#16a34a',display:'$18,100'},{label:'Mobile Money',value:13575,color:'#2463eb',display:'$13,575'},{label:'Insurance',value:9050,color:'#7c3aed',display:'$9,050'},{label:'Card',value:4525,color:'#f97316',display:'$4,525'}],'Total','$45.2K',170)}</div></div></div>
+    ${tbl([['Date',r=>fmtL(r.d)],['Invoices',r=>r.inv,'t-right'],['Items Sold',r=>num(r.items),'t-right'],['Gross Sales',r=>money(r.gross),'t-right'],['Discounts',r=>money(r.disc),'t-right'],['Net Sales',r=>`<b>${money(r.net)}</b>`,'t-right']],days)}`;
+  }else if(sub==='purchase'){
+    DRAW=()=>barChart($('#rChart'),MONTH_LABELS,[{name:'Purchases',color:'#16a34a',values:purch}]);
+    const bySup=SUPPLIERS.map(s=>{const ps=PURCHASES.filter(p=>p.supplier===s.name&&p.status!=='Cancelled');return {s:s.name,n:ps.length,items:ps.reduce((a,p)=>a+p.items,0),total:ps.reduce((a,p)=>a+p.total,0),paid:ps.reduce((a,p)=>a+p.paid,0)}}).sort((a,b)=>b.total-a.total);
+    body=`<div class="grid-stats c4">${statCard({t:'green',i:'bag',l:'Total Purchases',v:'$22,680.00',d:'↑ 8.3%'})}${statCard({t:'blue',i:'file',l:'Purchase Orders',v:PURCHASES.length})}${statCard({t:'purple',i:'truck',l:'Suppliers Used',v:bySup.filter(b=>b.n).length})}${statCard({t:'orange',i:'wallet',l:'Outstanding',v:money(bySup.reduce((a,b)=>a+b.total-b.paid,0))})}</div>
+    <div class="card" style="margin-bottom:18px"><div class="card-head"><h3>Monthly Purchases</h3>${legend([['Purchases','#16a34a']])}</div><div class="chart-box" id="rChart"></div></div>
+    ${tbl([['Supplier',r=>cellMain('building','teal',r.s)],['Orders',r=>r.n,'t-right'],['Items',r=>r.items,'t-right'],['Total',r=>`<b>${money(r.total)}</b>`,'t-right'],['Paid',r=>money(r.paid),'t-right'],['Balance',r=>money(r.total-r.paid),'t-right']],bySup)}`;
+  }else if(sub==='stock'){
+    DRAW=null;const byCat=CATS.map(c=>[c,MEDS.filter(m=>m.cat===c).reduce((a,m)=>a+m.stock*m.cost,0)]).sort((a,b)=>b[1]-a[1]),mx=byCat[0][1];
+    body=`<div class="grid-stats c4">${statCard({t:'blue',i:'box',l:'Total Units',v:num(MEDS.reduce((a,m)=>a+m.stock,0))})}${statCard({t:'green',i:'wallet',l:'Stock Value (Cost)',v:money(MEDS.reduce((a,m)=>a+m.stock*m.cost,0))})}${statCard({t:'purple',i:'trend',l:'Stock Value (Retail)',v:money(MEDS.reduce((a,m)=>a+m.stock*m.price,0))})}${statCard({t:'red',i:'alert',l:'Below Reorder',v:MEDS.filter(m=>m.stock<=m.reorder).length})}</div>
+    <div class="card card-pad" style="margin-bottom:18px"><h3 style="font-size:14.5px;margin-bottom:8px">Stock Value by Category</h3>${byCat.map(c=>`<div class="hbar"><span class="lbl">${c[0]}</span><div class="track"><div class="fill" style="width:${c[1]/mx*100}%"></div></div><span class="v">${money(c[1])}</span></div>`).join('')}</div>
+    ${tbl([['Medicine',r=>cellMain('pill','blue',r.name,r.batch)],['Category',r=>r.cat],['Qty',r=>num(r.stock),'t-right'],['Cost Value',r=>money(r.stock*r.cost),'t-right'],['Retail Value',r=>money(r.stock*r.price),'t-right'],['Sold (30d)',r=>num(r.sold),'t-right'],['Status',r=>badge(stockStatus(r))]],MEDS)}`;
+  }else if(sub==='profit'){
+    DRAW=()=>barChart($('#rChart'),MONTH_LABELS,[{name:'Revenue',color:'#2463eb',values:SERIES['12'].values},{name:'Cost of Sales',color:'#16a34a',values:purch},{name:'Expenses',color:'#f97316',values:exp}]);
+    const L=(a,b,c='')=>`<div class="pl-row ${c}"><span>${a}</span><span>${b}</span></div>`;
+    body=`<div class="grid-stats c4">${statCard({t:'blue',i:'dollar',l:'Revenue',v:'$45,250.00',d:'↑ 12.5%'})}${statCard({t:'green',i:'trend',l:'Gross Profit',v:'$22,570.00',d:'↑ 15.7%'})}${statCard({t:'orange',i:'wallet',l:'Operating Expenses',v:'$12,300.00',d:'↑ 3.4%',down:1})}${statCard({t:'purple',i:'percent',l:'Net Profit',v:'$10,270.00',d:'↑ 9.8%'})}</div>
+    <div class="grid-21"><div class="card"><div class="card-head"><h3>Revenue vs Costs</h3>${legend([['Revenue','#2463eb'],['Cost of Sales','#16a34a'],['Expenses','#f97316']])}</div><div class="chart-box" id="rChart"></div></div>
+    <div class="card" style="overflow:hidden"><div class="card-head" style="padding-bottom:12px"><h3>Profit & Loss Statement</h3><span class="muted" style="font-size:12px">${MON[TODAY.getMonth()]} ${TODAY.getFullYear()}</span></div>
+    ${L('Account','Amount','head')}${L('Sales Revenue','$45,250.00')}${L('Less: Cost of Goods Sold','($22,680.00)')}${L('Gross Profit','$22,570.00','total')}${L('Operating Expenses','')}${L('Salaries','$6,780.00','sub')}${L('Rent','$1,200.00','sub')}${L('Utilities','$227.90','sub')}${L('Transport & Delivery','$1,131.00','sub')}${L('Marketing','$250.00','sub')}${L('Other Expenses','$2,711.10','sub')}${L('Total Expenses','($12,300.00)')}${L('Net Profit','$10,270.00','total')}</div></div>`;
+  }else{
+    DRAW=null;const rows=[...MEDS].filter(m=>daysLeft(m.exp)<=180).sort((a,b)=>a.exp-b.exp);
+    body=`<div class="grid-stats c4">${statCard({t:'red',i:'x',l:'Expired Items',v:rows.filter(m=>daysLeft(m.exp)<0).length})}${statCard({t:'orange',i:'alert',l:'Expiring in 90 Days',v:rows.filter(m=>{const d=daysLeft(m.exp);return d>=0&&d<=90}).length})}${statCard({t:'amber',i:'clock',l:'Expiring in 180 Days',v:rows.length})}${statCard({t:'purple',i:'wallet',l:'Value at Risk',v:money(rows.reduce((a,m)=>a+m.stock*m.cost,0))})}</div>
+    ${tbl([['Medicine',r=>cellMain('pill','orange',r.name,r.generic)],['Batch',r=>r.batch],['Manufacturer',r=>r.mfr],['Qty',r=>r.stock,'t-right'],['Value',r=>money(r.stock*r.cost),'t-right'],['Expiry',r=>fmtD(r.exp)],['Days Left',r=>{const d=daysLeft(r.exp);return `<b style="color:${d<=30?'var(--red)':'var(--orange)'}">${d}</b>`},'t-right'],['Status',r=>badge(expStatus(r))]],rows)}`;
+  }
+  return `${pageHead('Reports','Reports / '+CURRENT.title)}<div class="card" style="margin-bottom:18px"><div class="tabs">${REPORT_TABS.map(t=>`<a href="#/reports/${t[0]}" class="${t[0]===sub?'on':''}">${t[1]}</a>`).join('')}</div>${filt}</div>${body}`;
+}
+
+/* ---------- Settings ---------- */
+const sw=(t,s,on=1)=>`<div class="setting-row"><div><b style="font-weight:500">${t}</b><small>${s}</small></div><label class="switch"><input type="checkbox" ${on?'checked':''}><span></span></label></div>`;
+PAGES['settings']=()=>{
+  const fg=fs=>`<div class="form-grid">${fs.map(f=>fieldHTML(f)).join('')}</div>`;
+  const save=`<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px"><button class="btn btn-light">Cancel</button><button class="btn btn-primary" onclick="toast('Settings saved')">${ic('check',16)} Save Changes</button></div>`;
+  return `${pageHead('Settings','Settings')}
+  <div class="card tabs-scope"><div class="tabs">${['General','Invoice & Tax','Notifications','Branches','Backup & Security'].map((t,i)=>`<button data-tab="${i}" class="${i?'':'on'}">${t}</button>`).join('')}</div>
+  <div class="card-pad">
+   <div class="panel on" data-panel="0"><div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">${LOGO(64)}<div><b>Pharmacy Logo</b><p class="muted" style="font-size:12px">PNG or SVG, at least 256×256px</p><button class="btn btn-light btn-sm" style="margin-top:6px">${ic('upload',14)} Upload</button></div></div>
+    ${fg([{l:'Pharmacy Name',v:'Pharmacy Management System'},{l:'Registration / License No.',v:'PC/DSM/2026/0451'},{l:'Email',v:'info@pharmacy.com',t:'email'},{l:'Phone',v:'+255 222 000 111'},{l:'TIN Number',v:'123-456-789'},{l:'Currency',t:'select',o:['USD ($)','TZS (TSh)','KES (KSh)','UGX (USh)']},{l:'Date Format',t:'select',o:['DD-MM-YYYY','MM/DD/YYYY','YYYY-MM-DD']},{l:'Time Zone',t:'select',o:['Africa/Dar_es_Salaam (EAT)','Africa/Nairobi (EAT)','UTC']},{l:'Address',t:'textarea',full:1,v:'Plot 12, Samora Avenue, Dar es Salaam, Tanzania'}])}${save}</div>
+   <div class="panel" data-panel="1">${fg([{l:'Invoice Prefix',v:'INV-'},{l:'Next Invoice No.',v:String(invNo).padStart(5,'0')},{l:'Purchase Order Prefix',v:'PUR-'},{l:'Default Tax Rate',t:'select',o:['5%','0%','18%']},{l:'Tax Inclusive Pricing',t:'select',o:['No','Yes']},{l:'Receipt Paper Size',t:'select',o:['80mm Thermal','58mm Thermal','A4']},{l:'Invoice Footer Note',t:'textarea',full:1,v:'Thank you for your purchase. Medicines once sold cannot be returned without a valid reason.'}])}
+    <div style="margin-top:12px">${sw('Allow discounts at POS','Cashiers can apply a discount up to the limit set for their role')}${sw('Print receipt automatically','Send to the default printer after completing a sale')}${sw('Allow negative stock','Permit sales when system stock is zero',0)}</div>${save}</div>
+   <div class="panel" data-panel="2">${sw('Low stock alerts','Notify when an item drops to or below its reorder level')}${sw('Expiry alerts','Notify 90, 60 and 30 days before a batch expires')}${sw('Daily sales summary','Email the day’s sales summary at closing time')}${sw('Overdue payment reminders','Remind customers with overdue balances by SMS',0)}${sw('New purchase order approval','Notify admins when a PO needs approval')}${save}</div>
+   <div class="panel" data-panel="3"><div class="table-wrap"><table class="table"><thead><tr><th>Branch</th><th>Location</th><th>Manager</th><th>Phone</th><th>Status</th></tr></thead><tbody><tr><td>${cellMain('building','blue','Main Branch','BR-001')}</td><td>Samora Ave, Dar es Salaam</td><td>Godfrey Desidery</td><td>+255 222 000 111</td><td>${badge('Active')}</td></tr><tr><td>${cellMain('building','green','Mbezi Branch','BR-002')}</td><td>Mbezi Beach, Dar es Salaam</td><td>Janeth Mbwambo</td><td>+255 222 000 222</td><td>${badge('Active')}</td></tr></tbody></table></div><button class="btn btn-primary" style="margin-top:16px" onclick="toast('Branch form coming soon')">${ic('plus',16)} Add Branch</button></div>
+   <div class="panel" data-panel="4">${sw('Automatic daily backup','Back up the database every day at 23:00')}${sw('Two-factor authentication','Require a code from an authenticator app at sign-in',0)}${sw('Auto logout after inactivity','Sign users out after 15 minutes of inactivity')}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button class="btn btn-primary" onclick="toast('Backup created')">${ic('download',16)} Backup Now</button><button class="btn btn-light" onclick="toast('Select a backup file to restore')">${ic('upload',16)} Restore</button></div>
+    <p class="muted" style="font-size:12px;margin-top:10px">Last backup: ${fmtL(addDays(-1))}, 23:00 · 48.2 MB</p></div>
+  </div></div>`;
+};
+
+/* ================= NAV & ROUTER ================= */
+const NAV=[
+ {id:'dashboard',l:'Dashboard',i:'home'},
+ {id:'sales',l:'Sales',i:'cart',ch:[['pos','Point of Sale'],['invoices','Sales Invoices'],['returns','Sales Returns']]},
+ {id:'purchase',l:'Purchase',i:'bag',ch:[['orders','Purchase Orders'],['grn','Goods Received'],['returns','Purchase Returns']]},
+ {id:'inventory',l:'Inventory',i:'box',ch:[['stock','Stock List'],['expiry','Expiry Management'],['adjustments','Stock Adjustments']]},
+ {id:'customers',l:'Customers',i:'users'},
+ {id:'suppliers',l:'Suppliers',i:'truck'},
+ {id:'accounting',l:'Accounting',i:'wallet',ch:[['expenses','Expenses'],['payments','Payments'],['ledger','General Ledger']]},
+ {id:'reports',l:'Reports',i:'chart',ch:REPORT_TABS},
+ {id:'master',l:'Master Data',i:'db',ch:[['medicines','Medicines'],['categories','Categories'],['units','Units & Forms'],['manufacturers','Manufacturers']]},
+ {id:'users',l:'User Management',i:'shield'},
+ {id:'settings',l:'Settings',i:'gear'}
+];
+const openGroups=new Set();
+function renderNav(route){
+  const [top]=route.split('/');openGroups.add(top);
+  $('#nav').innerHTML=NAV.map(n=>n.ch?`<div class="nav-group ${openGroups.has(n.id)?'open':''}" data-g="${n.id}"><button class="nav-item ${top===n.id?'active':''}" data-toggle="${n.id}">${ic(n.i)}<span class="nav-label">${n.l}</span><span class="chev">${ic('chev',16)}</span></button><div class="submenu">${n.ch.map(c=>`<a href="#/${n.id}/${c[0]}" class="${route===n.id+'/'+c[0]?'active':''}">${c[1]}</a>`).join('')}</div></div>`
+    :`<a class="nav-item ${top===n.id?'active':''}" href="#/${n.id}" title="${n.l}">${ic(n.i)}<span class="nav-label">${n.l}</span></a>`).join('');
+}
+function router(){
+  let r=location.hash.replace(/^#\/?/,'')||'dashboard';
+  if(r==='login'){$('#login').classList.add('show');return}
+  $('#login').classList.remove('show');
+  const grp=NAV.find(n=>n.id===r&&n.ch);if(grp){location.replace('#/'+r+'/'+grp.ch[0][0]);return}
+  CURRENT=null;AFTER=null;DRAW=null;
+  let html;
+  if(r.startsWith('reports'))html=reportsPage(r.split('/')[1]);
+  else html=(PAGES[r]||(()=>{r='dashboard';return PAGES.dashboard()}))();
+  $('#content').innerHTML=html;
+  renderNav(r);
+  AFTER&&AFTER();DRAW&&DRAW();
+  if(GLOBAL_Q){const f=$('[data-filter]');if(f){f.value=GLOBAL_Q;filterTable(f.closest('.card'))}GLOBAL_Q=''}
+  document.body.classList.remove('nav-open');window.scrollTo(0,0);
+  document.title=(CURRENT?.title||$('#content h1')?.textContent||'Dashboard')+' · Pharmacy';
+}
+
+/* ================= GLOBAL EVENTS ================= */
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const tg=t.closest('[data-toggle]');if(tg){const g=tg.dataset.toggle;if(document.body.classList.contains('collapsed')&&innerWidth>1024){location.hash='#/'+g;return}openGroups.has(g)?openGroups.delete(g):openGroups.add(g);tg.parentElement.classList.toggle('open');return}
+  const a=t.closest('[data-act]');
+  if(a){const act=a.dataset.act,i=a.dataset.i,row=CURRENT?.rows?.[i];
+    if(act==='add'){CURRENT.onAdd?CURRENT.onAdd():CURRENT.form?openForm(CURRENT.form):toast('Coming soon')}
+    else if(act==='edit')CURRENT.form?openForm(CURRENT.form,row):toast('Editing not available here',1);
+    else if(act==='view')CURRENT.view?CURRENT.view(row):viewDetails(row);
+    else if(act==='print')CURRENT.view?CURRENT.view(row):window.print();
+    else if(act==='delete')confirmDelete(i);
+    else if(act==='export')exportTable(a.closest('.card')?.querySelector('table')?a.closest('.card'):$('#content'));
+    return}
+  const tab=t.closest('[data-tab]');if(tab){const sc=tab.closest('.tabs-scope');$$('[data-tab]',sc).forEach(x=>x.classList.toggle('on',x===tab));$$('[data-panel]',sc).forEach(p=>p.classList.toggle('on',p.dataset.panel===tab.dataset.tab));return}
+  if(t.closest('[data-close]')||t.id==='modal')closeModal();
+  if(!t.closest('.rel'))$$('.dropdown').forEach(d=>d.classList.remove('show'));
+});
+document.addEventListener('input',e=>{if(e.target.matches('[data-filter]'))filterTable(e.target.closest('.card'))});
+document.addEventListener('change',e=>{if(e.target.matches('[data-select]'))filterTable(e.target.closest('.card'))});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>DRAW&&DRAW(),120)});
+
+/* ================= INIT ================= */
+$('#logo').innerHTML=LOGO(38);$('#logoLogin').innerHTML=LOGO(44);$('#logoWhite').innerHTML=LOGO(38,1);
+$('#menuBtn').innerHTML=ic('menu',20);$('#mclose').innerHTML=ic('x',18);
+$$('[data-ic]').forEach(el=>el.insertAdjacentHTML('afterbegin',ic(el.dataset.ic,18)));
+$('#loginFeats').innerHTML=[['cart','Fast POS checkout'],['alert','Expiry & stock alerts'],['chart','Real-time reports'],['shield','Role-based access']].map(f=>`<div>${ic(f[0],18)}${f[1]}</div>`).join('');
+$('#menuBtn').onclick=()=>innerWidth<=1024?document.body.classList.toggle('nav-open'):document.body.classList.toggle('collapsed');
+$('#overlay').onclick=()=>document.body.classList.remove('nav-open');
+$('#bellBtn').onclick=()=>{$('#userMenu').classList.remove('show');$('#notifMenu').classList.toggle('show')};
+$('#userBtn').onclick=()=>{$('#notifMenu').classList.remove('show');$('#userMenu').classList.toggle('show')};
+$('#notifMenu').innerHTML=`<div style="display:flex;justify-content:space-between;padding:8px 10px"><b>Notifications</b><a class="link" href="#/inventory/expiry">View all</a></div>`+
+  [...MEDS.filter(m=>m.stock===0).map(m=>['red','x',`<b>${m.name}</b> is out of stock`,'Just now']),...MEDS.filter(m=>{const d=daysLeft(m.exp);return d>=0&&d<=40}).map(m=>['orange','alert',`<b>${m.name}</b> (${m.batch}) expires in ${daysLeft(m.exp)} days`,'1 hour ago']),['blue','bag','<b>PUR-0009</b> received from MedSupply Africa','3 hours ago']].slice(0,5)
+  .map(n=>`<div class="notif-item"><span class="stat-icon tone-${n[0]}" style="width:32px;height:32px">${ic(n[1],15)}</span><div><p>${n[2]}</p><small>${n[3]}</small></div></div>`).join('');
+$('#userMenu').innerHTML=`<div style="padding:10px;border-bottom:1px solid var(--border);margin-bottom:4px"><b>Godfrey Desidery</b><div class="muted" style="font-size:12px">godfrey.d@pharmacy.com</div></div><a href="#/settings">${ic('user',16)} My Profile</a><a href="#/settings">${ic('gear',16)} Settings</a><a href="#/users">${ic('shield',16)} Users & Roles</a><a href="#/login" style="color:var(--red)">${ic('logout',16)} Logout</a>`;
+$('#globalSearch').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const q=e.target.value.trim();if(!q)return;const low=q.toLowerCase();
+  GLOBAL_Q=q;const target=low.startsWith('inv')?'sales/invoices':low.startsWith('pur')?'purchase/orders':CUSTOMERS.some(c=>c.name.toLowerCase().includes(low))?'customers':'inventory/stock';
+  e.target.value='';location.hash==='#/'+target?router():location.hash='#/'+target});
+$('#loginForm').onsubmit=e=>{e.preventDefault();location.hash='#/dashboard';toast('Welcome back, Godfrey!')};
+addEventListener('hashchange',router);
+router();
+</script>
+</body>
+</html>

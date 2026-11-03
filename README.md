@@ -1,0 +1,28 @@
+# pharmacy-core-docs
+
+Documentation for **Pharmacy Core**, a multi-tenant, multi-branch pharmacy management system.
+
+## The three repositories
+
+| Repository | What | Stack |
+|---|---|---|
+| `pharmacy-core-api` | The backend: one modular monolith exposing `/api/v1` | Java 21, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 17 |
+| `pharmacy-core-web` | The web app for the back office and POS | Angular 21 |
+| `pharmacy-core-docs` | This repository: product, contract, architecture, runbooks | Markdown, Mermaid |
+
+The web app and any external system talk to the API only through the contract in `contracts/api-v1.md`.
+
+## Contents
+
+| Path | What |
+|---|---|
+| [`prd/pharmacy-prd.md`](prd/pharmacy-prd.md) | Product requirements (scope, NFRs, standards, release plan) |
+| [`contracts/api-v1.md`](contracts/api-v1.md) | HTTP contract v1: headers, envelopes, permissions, every route and DTO |
+| [`architecture/overview.md`](architecture/overview.md) | System and module architecture, request and event flows, tenancy, scaling |
+| [`architecture/decisions/`](architecture/decisions/) | Architecture decision records (ADRs) |
+| [`runbook/local-development.md`](runbook/local-development.md) | Run the API and the web app locally |
+| [`runbook/deployment.md`](runbook/deployment.md) | Configuration, database roles, migrations, probes, scaling |
+| [`prototype/index.html`](prototype/index.html) | Clickable UI prototype (static, mock data) |
+| [`presentations/`](presentations/) | Stakeholder deck (PDF and its HTML source) |
+
+The binding module-level spec (ports, views, events) lives with the code, in `pharmacy-core-api/docs/MODULE-PORTS.md`.
