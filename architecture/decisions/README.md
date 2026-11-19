@@ -12,5 +12,6 @@
 | [0008](0008-opaque-sessions-argon2id.md) | Opaque session tokens and Argon2id passwords | accepted |
 | [0009](0009-integration-ports-and-cloudevents-webhooks.md) | Integration ports and CloudEvents webhooks | accepted |
 | [0010](0010-technology-stack.md) | Spring Boot 4, Java 21, Angular 21 | accepted |
+| [0011](0011-application-clock-and-simulated-clock.md) | One application clock, and a simulated clock for simulated worlds | accepted |
 
 A new decision gets the next number and uses the same short structure: Context, Decision, Consequences.

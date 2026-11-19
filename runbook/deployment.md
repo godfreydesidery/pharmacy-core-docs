@@ -28,6 +28,14 @@ create database pharmacy owner pharmacy_owner;
 | `PHARMACY_LOG_FORMAT` | no | `ecs` or `logstash` for JSON logs with `correlationId` |
 | `PHARMACY_PAYMENTS_PROVIDER` / `PHARMACY_FISCAL_PROVIDER` | no (`manual` / `none`) | Select integration adapters |
 | `PHARMACY_SEED_DEMO` | no (`false`) | Never `true` in production |
+| `SPRING_PROFILES_ACTIVE` | no | Never include `sim` on a server with real pharmacies; see below |
+| `PHARMACY_SIM_ALLOWED` | no (`false`) | Only for a dedicated demo service that runs the `sim` profile on its own database |
+
+> **The `sim` profile is for simulations only.** It replaces the system clock with a simulated
+> clock that moves every pharmacy's time forward for good, and it relaxes sessions, sign-in limits
+> and payments. The API refuses to start under `sim` unless the `local` profile is also active, or
+> `PHARMACY_SIM_ALLOWED=true` declares a dedicated demo service. See
+> [simulated-world.md](simulated-world.md).
 
 ## Migrations as a separate step
 
