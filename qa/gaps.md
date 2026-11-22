@@ -516,7 +516,7 @@ The admin then sees "accepted as …".
 | G19 | ✅ **Built.** Temporary password (8 characters, no look-alikes) shown once; until changed, only account routes answer (`403 password_change_required`) and the web app opens "Choose your own password" |
 | G20 | ✅ **Built.** Sign-in takes `username@CODE` in the normal box |
 | G21 | ✅ **Built** for reset (`POST /users/{id}/reset-password`, managed only, ends sessions). Unlock still works for every member until G10 |
-| G22 | No flow to link a managed login to a personal account |
+| G22 | ✅ **Built 22 Nov 2026** (branch `link-staff-login`): the person, signed in to their personal account, links a staff login with its password and their own; the membership moves, the login stops ("sign in with your email"), the pharmacy's audit says only that it was linked. No flow to link a managed login to a personal account |
 | G23 | ✅ **Built.** `tenants.direct_user_creation`, root admin only, on by default; off refuses managed logins and makes adding by email always invite |
 
 **Nice to have**
