@@ -491,9 +491,9 @@ The admin then sees "accepted as …".
 |---|---|---|
 | G1 | ✅ **Built 22 Nov 2026** (branch `invite-only`). Adding staff did not always invite | A new email creates the account at once with an admin-chosen password, and the answer ("added" or "invited") tells the admin whether the email already has an account (`UserAdministrationImpl.addMember`, `MemberEnrolmentImpl`) |
 | G2 | ✅ **Built.** An invitation could not be accepted with an existing account under another email; now the person signs in and joins (`POST /auth/invitations/join`), and the pharmacy sees `acceptedAs` | Accepting needs the password of the invited email's account, or creates a new account, so duplicates follow (`InvitationServiceImpl.accept`) |
-| G3 | No email change | Nobody can change an email, not even the root admin |
+| G3 | ✅ **Built 22 Nov 2026** (branch `account-security`): the person changes it with the password (and the 2FA code when on); a link to the new address confirms it; the old address and verified phone are told; the answer never reveals whether the address has an account. No email change | Nobody can change an email, not even the root admin |
 | G4 | ✅ **Built 22 Nov 2026** (API branch `actor-uid-stamps`). Record stamps held the email as text | Every table now also records `created_by_uid` and `updated_by_uid`, filled for existing rows; new audit entries carry `actor_uid`. Shifts and the cashier report match people by account |
-| G5 | No way back in after losing the mailbox | Reset is by email only; the root admin can send reset links only to root admins |
+| G5 | ✅ **Built:** reset by a code sent to the verified phone; 2FA recovery codes; and root-assisted recovery to a new email after a 24-hour hold, with the old email and phone told and able to cancel (Platform → Account recovery). No way back in after losing the mailbox | Reset is by email only; the root admin can send reset links only to root admins |
 | G6 | ✅ **Built 22 Nov 2026** (branch `pharmacies-apart`): a snapshot when the person leaves, shown and searched from then on. Former employers saw later changes | A deactivated member still shows the person's current name, email and phone (`AccessViews.member`) |
 | G7 | ✅ **Built:** "last active here" per membership; a pharmacy's audit records a sign-in when a session first works there and a sign-out only where it worked. Last sign-in was global | `MemberView.lastSignInAt` shows activity at other pharmacies |
 | G8 | ✅ **Built:** account routes ignore the pharmacy named, so their events are the platform's. Account security events landed in the active pharmacy's audit log | Audit entries take the tenant of the request, and the web app sends it on account routes too |
@@ -502,11 +502,11 @@ The admin then sees "accepted as …".
 
 | # | Gap | Today |
 |---|---|---|
-| G9 | The admin can fill in a phone; phones are not verified or unique | Needed before phone recovery (G5) |
+| G9 | ✅ **Built:** the person verifies a phone with a 6-digit SMS code (10 minutes, 5 tries, 3 sends an hour); a verified number belongs to one account and moves to whoever verifies it last (numbers are recycled), the earlier holder told; admins no longer set a person's phone. The admin can fill in a phone; phones are not verified or unique | Needed before phone recovery (G5) |
 | G10 | ✅ **Built:** only a pharmacy's own staff logins can be unlocked by it. Any pharmacy's admin could unlock the shared account | Undoes a lock caused at another pharmacy (`AccountLocksImpl.unlock`). The 15-minute self-expiry already matches the desired state |
 | G11 | ✅ **Built.** The invite dialog says the account keeps its own name, phone and password; the invitations list shows which account accepted. (The name the admin typed was silently dropped) | When the account exists, its name wins and the admin is not told |
 | G12 | ✅ **Built.** Onboarding with an existing email now invites the owner as ADMIN (`adminInvited`). (It attached that account as ADMIN silently) | The typed password is ignored (`seedTenant`); root admin only |
-| G13 | No personal security history | The security page shows 2FA, passkeys and sessions, not sign-ins or password changes |
+| G13 | ✅ **Built:** a Security history card on the account page (sign-ins, failures, password/email/phone/2FA changes, recovery), the platform's record of the person only. No personal security history | The security page shows 2FA, passkeys and sessions, not sign-ins or password changes |
 
 **Managed logins and the flag**
 
