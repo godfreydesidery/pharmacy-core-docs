@@ -492,7 +492,7 @@ The admin then sees "accepted as …".
 | G1 | Adding staff does not always invite | A new email creates the account at once with an admin-chosen password, and the answer ("added" or "invited") tells the admin whether the email already has an account (`UserAdministrationImpl.addMember`, `MemberEnrolmentImpl`) |
 | G2 | An invitation cannot be accepted with an existing account under another email | Accepting needs the password of the invited email's account, or creates a new account, so duplicates follow (`InvitationServiceImpl.accept`) |
 | G3 | No email change | Nobody can change an email, not even the root admin |
-| G4 | Record stamps hold the email as text | `Actor.reference` is the email; names are looked up by email (`displayNames`). Must be fixed before G3 |
+| G4 | ✅ **Built 22 Nov 2026** (API branch `actor-uid-stamps`). Record stamps held the email as text | Every table now also records `created_by_uid` and `updated_by_uid`, filled for existing rows; new audit entries carry `actor_uid`. Shifts and the cashier report match people by account |
 | G5 | No way back in after losing the mailbox | Reset is by email only; the root admin can send reset links only to root admins |
 | G6 | Former employers see later changes | A deactivated member still shows the person's current name, email and phone (`AccessViews.member`) |
 | G7 | Last sign-in is global | `MemberView.lastSignInAt` shows activity at other pharmacies |
