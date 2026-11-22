@@ -512,12 +512,12 @@ The admin then sees "accepted as …".
 
 | # | Gap |
 |---|---|
-| G18 | No managed account kind: no per-pharmacy username, and `AddMemberCommand.email` is required |
-| G19 | No forced password change at first sign-in |
-| G20 | Sign-in accepts only an email, not `username@CODE` |
-| G21 | No admin reset or unlock limited to managed logins |
+| G18 | ✅ **Built 22 Nov 2026** (API and web branch `managed-logins`). Managed logins: `POST /users/managed`, username unique within the pharmacy, contact email and phone kept by the pharmacy |
+| G19 | ✅ **Built.** Temporary password (8 characters, no look-alikes) shown once; until changed, only account routes answer (`403 password_change_required`) and the web app opens "Choose your own password" |
+| G20 | ✅ **Built.** Sign-in takes `username@CODE` in the normal box |
+| G21 | ✅ **Built** for reset (`POST /users/{id}/reset-password`, managed only, ends sessions). Unlock still works for every member until G10 |
 | G22 | No flow to link a managed login to a personal account |
-| G23 | No root-admin flag for direct creation |
+| G23 | ✅ **Built.** `tenants.direct_user_creation`, root admin only, on by default; off refuses managed logins and makes adding by email always invite |
 
 **Nice to have**
 
