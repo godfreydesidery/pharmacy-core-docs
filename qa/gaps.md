@@ -489,8 +489,8 @@ The admin then sees "accepted as …".
 
 | # | Gap | Today |
 |---|---|---|
-| G1 | Adding staff does not always invite | A new email creates the account at once with an admin-chosen password, and the answer ("added" or "invited") tells the admin whether the email already has an account (`UserAdministrationImpl.addMember`, `MemberEnrolmentImpl`) |
-| G2 | An invitation cannot be accepted with an existing account under another email | Accepting needs the password of the invited email's account, or creates a new account, so duplicates follow (`InvitationServiceImpl.accept`) |
+| G1 | ✅ **Built 22 Nov 2026** (branch `invite-only`). Adding staff did not always invite | A new email creates the account at once with an admin-chosen password, and the answer ("added" or "invited") tells the admin whether the email already has an account (`UserAdministrationImpl.addMember`, `MemberEnrolmentImpl`) |
+| G2 | ✅ **Built.** An invitation could not be accepted with an existing account under another email; now the person signs in and joins (`POST /auth/invitations/join`), and the pharmacy sees `acceptedAs` | Accepting needs the password of the invited email's account, or creates a new account, so duplicates follow (`InvitationServiceImpl.accept`) |
 | G3 | No email change | Nobody can change an email, not even the root admin |
 | G4 | ✅ **Built 22 Nov 2026** (API branch `actor-uid-stamps`). Record stamps held the email as text | Every table now also records `created_by_uid` and `updated_by_uid`, filled for existing rows; new audit entries carry `actor_uid`. Shifts and the cashier report match people by account |
 | G5 | No way back in after losing the mailbox | Reset is by email only; the root admin can send reset links only to root admins |
@@ -504,8 +504,8 @@ The admin then sees "accepted as …".
 |---|---|---|
 | G9 | The admin can fill in a phone; phones are not verified or unique | Needed before phone recovery (G5) |
 | G10 | Any pharmacy's admin can unlock the shared account | Undoes a lock caused at another pharmacy (`AccountLocksImpl.unlock`). The 15-minute self-expiry already matches the desired state |
-| G11 | The name the admin typed is silently dropped | When the account exists, its name wins and the admin is not told |
-| G12 | Onboarding with an existing email attaches that account as ADMIN silently | The typed password is ignored (`seedTenant`); root admin only |
+| G11 | ✅ **Built.** The invite dialog says the account keeps its own name, phone and password; the invitations list shows which account accepted. (The name the admin typed was silently dropped) | When the account exists, its name wins and the admin is not told |
+| G12 | ✅ **Built.** Onboarding with an existing email now invites the owner as ADMIN (`adminInvited`). (It attached that account as ADMIN silently) | The typed password is ignored (`seedTenant`); root admin only |
 | G13 | No personal security history | The security page shows 2FA, passkeys and sessions, not sign-ins or password changes |
 
 **Managed logins and the flag**
