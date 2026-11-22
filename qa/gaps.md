@@ -523,10 +523,10 @@ The admin then sees "accepted as …".
 
 | # | Gap |
 |---|---|
-| G14 | A person cannot leave a pharmacy themselves |
-| G15 | No pharmacy-owned staff details (staff number, job title, work contact) |
-| G16 | A pharmacy cannot require 2FA of its staff (only root admins can be required) |
-| G17 | The idle timeout is per session, not per pharmacy, so it flips when two tabs are in different pharmacies |
+| G14 | ✅ **Built 22 Nov 2026** (branch `staff-g14-g17`): Your pharmacies → Leave, with the password; the last admin cannot. A person cannot leave a pharmacy themselves |
+| G15 | ✅ **Built:** staff number (unique in the pharmacy), job title, work phone and email on the membership, seen by that pharmacy only. No pharmacy-owned staff details (staff number, job title, work contact) |
+| G16 | ✅ **Built:** Settings → Require two-factor; staff without an authenticator app or passkey are sent to set one up; an admin without one cannot turn it on. A pharmacy cannot require 2FA of its staff (only root admins can be required) |
+| G17 | ✅ **Built:** a session keeps the strictest limit of the pharmacies it works in. The idle timeout is per session, not per pharmacy, so it flips when two tabs are in different pharmacies |
 
 **Order of work.**
 1. Record stamps carry the account id (G4).
