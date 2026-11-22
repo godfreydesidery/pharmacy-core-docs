@@ -494,16 +494,16 @@ The admin then sees "accepted as …".
 | G3 | No email change | Nobody can change an email, not even the root admin |
 | G4 | ✅ **Built 22 Nov 2026** (API branch `actor-uid-stamps`). Record stamps held the email as text | Every table now also records `created_by_uid` and `updated_by_uid`, filled for existing rows; new audit entries carry `actor_uid`. Shifts and the cashier report match people by account |
 | G5 | No way back in after losing the mailbox | Reset is by email only; the root admin can send reset links only to root admins |
-| G6 | Former employers see later changes | A deactivated member still shows the person's current name, email and phone (`AccessViews.member`) |
-| G7 | Last sign-in is global | `MemberView.lastSignInAt` shows activity at other pharmacies |
-| G8 | Account security events land in the active pharmacy's audit log | Audit entries take the tenant of the request, and the web app sends it on account routes too |
+| G6 | ✅ **Built 22 Nov 2026** (branch `pharmacies-apart`): a snapshot when the person leaves, shown and searched from then on. Former employers saw later changes | A deactivated member still shows the person's current name, email and phone (`AccessViews.member`) |
+| G7 | ✅ **Built:** "last active here" per membership; a pharmacy's audit records a sign-in when a session first works there and a sign-out only where it worked. Last sign-in was global | `MemberView.lastSignInAt` shows activity at other pharmacies |
+| G8 | ✅ **Built:** account routes ignore the pharmacy named, so their events are the platform's. Account security events landed in the active pharmacy's audit log | Audit entries take the tenant of the request, and the web app sends it on account routes too |
 
 **Should fix**
 
 | # | Gap | Today |
 |---|---|---|
 | G9 | The admin can fill in a phone; phones are not verified or unique | Needed before phone recovery (G5) |
-| G10 | Any pharmacy's admin can unlock the shared account | Undoes a lock caused at another pharmacy (`AccountLocksImpl.unlock`). The 15-minute self-expiry already matches the desired state |
+| G10 | ✅ **Built:** only a pharmacy's own staff logins can be unlocked by it. Any pharmacy's admin could unlock the shared account | Undoes a lock caused at another pharmacy (`AccountLocksImpl.unlock`). The 15-minute self-expiry already matches the desired state |
 | G11 | ✅ **Built.** The invite dialog says the account keeps its own name, phone and password; the invitations list shows which account accepted. (The name the admin typed was silently dropped) | When the account exists, its name wins and the admin is not told |
 | G12 | ✅ **Built.** Onboarding with an existing email now invites the owner as ADMIN (`adminInvited`). (It attached that account as ADMIN silently) | The typed password is ignored (`seedTenant`); root admin only |
 | G13 | No personal security history | The security page shows 2FA, passkeys and sessions, not sign-ins or password changes |
