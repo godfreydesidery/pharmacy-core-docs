@@ -426,6 +426,119 @@ Each needs its own design; listed for planning:
 - **Barcode scanning** in receiving and stock-take, not only the POS.
 - **Per-pharmacy receipt and print templates:** thermal 58/80 mm and A4.
 
+### 9.8 Staff who work in several pharmacies
+A person may work in more than one pharmacy, such as weekdays at one and weekends at another. Decisions taken with the owner on 22 November 2026.
+
+**Premise:** the pharmacies do not know each other and may be competitors. No pharmacy may learn that another exists, what another entered about the person, or when the person works there.
+
+**Today.** The base model already supports this:
+- one account per person (`access.users`), with one membership per pharmacy (role, branches, active flag);
+- each request is checked against the active membership of the pharmacy it names, and row-level security keeps the pharmacies apart;
+- deactivating a member in one pharmacy leaves the others untouched.
+
+The gaps are in the personal details (email, phone, name, password) that all pharmacies share.
+
+#### 9.8.1 Desired state
+**Two kinds of account.**
+
+| | Personal account | Managed login |
+|---|---|---|
+| How it starts | Invitation by email | Created directly by a pharmacy admin |
+| Belongs to | The person | One pharmacy |
+| Signs in with | Email | `username@PHARMACYCODE` in the normal sign-in box (`juma@DAWA`); username unique within the pharmacy, upper/lower case ignored |
+| Email and phone | Identity: verified, unique, changed only by the person | Contact details only: not unique, the admin may edit them |
+| Password | Set only by the person | The admin sets a temporary one; the person must change it at first sign-in |
+| Lockout and recovery | Lock ends on its own; the person resets by email (later also by verified phone). No pharmacy admin may unlock or reset it | The admin may unlock or reset it; each reset is audited and the person told (SMS first) |
+| Works in | Any number of pharmacies | That pharmacy only |
+| On leaving | Only the membership ends | The pharmacy deactivates the login; its sessions end at once |
+
+**Direct creation is a per-pharmacy flag that only the root admin controls.**
+- The flag lives on the pharmacy record (platform routes), not in `tenancy.settings`, because the pharmacy admin can edit those.
+- It is **on** by default for new pharmacies and **on** for existing ones, including DAWA. Existing email users stay personal accounts.
+- **Off:** the admin may only invite; the API refuses direct creation (`403 direct_creation_disabled`).
+- **Switched off later:** existing managed logins keep working and the admin may still reset them; only new direct creations stop.
+- **Why the platform controls it:** with direct creation, an admin knows temporary passwords and can reset a cashier's password, then sell under that cashier's name. The forced change and the audit make this visible but cannot prevent it. A chain may want the flag off.
+
+**Adding staff.**
+- Adding a member by email always sends an invitation and gives the same answer whether or not the email already has an account.
+- An admin never sets the password of an email account.
+
+**Accepting an invitation.** The link grants access; the email only delivers it. The person either:
+- signs in with **any** existing account, even under another email; or
+- creates a new account.
+
+The admin then sees "accepted as …".
+
+**Merging.** A person with a managed login in one pharmacy and a personal account elsewhere may link them, and only that person may do so. The pharmacy sees only "now signs in with a personal account".
+
+**What a pharmacy sees of a person.**
+- Their current name, email and phone while the membership is active; a snapshot from when they left after it ends, so a former employer never sees later changes.
+- Activity in **its own** pharmacy only: "last active here", not a global last sign-in.
+- Only its own audit entries. Account security events (password and 2FA changes, lockouts, unlocks) belong to the person's own security page.
+
+**Record stamps** (`created_by`, `updated_by`, audit actor) carry the account id plus the name and email as they were at the time. History then survives an email change and a merge.
+
+**Tanzanian conditions.**
+- Notices go by SMS first when the person has a phone; email is the fallback.
+- Temporary passwords are short, with no look-alike characters (0/O, 1/l/I), because they are read out at the counter or sent by SMS.
+- Pharmacy codes are short, memorable and set by the root admin.
+- New screens (first-sign-in password change, invitation, linking) have Swahili text.
+
+#### 9.8.2 Gaps
+**Must fix (leaks or people left stranded)**
+
+| # | Gap | Today |
+|---|---|---|
+| G1 | Adding staff does not always invite | A new email creates the account at once with an admin-chosen password, and the answer ("added" or "invited") tells the admin whether the email already has an account (`UserAdministrationImpl.addMember`, `MemberEnrolmentImpl`) |
+| G2 | An invitation cannot be accepted with an existing account under another email | Accepting needs the password of the invited email's account, or creates a new account, so duplicates follow (`InvitationServiceImpl.accept`) |
+| G3 | No email change | Nobody can change an email, not even the root admin |
+| G4 | ✅ **Built 22 Nov 2026** (API branch `actor-uid-stamps`). Record stamps held the email as text | Every table now also records `created_by_uid` and `updated_by_uid`, filled for existing rows; new audit entries carry `actor_uid`. Shifts and the cashier report match people by account |
+| G5 | No way back in after losing the mailbox | Reset is by email only; the root admin can send reset links only to root admins |
+| G6 | Former employers see later changes | A deactivated member still shows the person's current name, email and phone (`AccessViews.member`) |
+| G7 | Last sign-in is global | `MemberView.lastSignInAt` shows activity at other pharmacies |
+| G8 | Account security events land in the active pharmacy's audit log | Audit entries take the tenant of the request, and the web app sends it on account routes too |
+
+**Should fix**
+
+| # | Gap | Today |
+|---|---|---|
+| G9 | The admin can fill in a phone; phones are not verified or unique | Needed before phone recovery (G5) |
+| G10 | Any pharmacy's admin can unlock the shared account | Undoes a lock caused at another pharmacy (`AccountLocksImpl.unlock`). The 15-minute self-expiry already matches the desired state |
+| G11 | The name the admin typed is silently dropped | When the account exists, its name wins and the admin is not told |
+| G12 | Onboarding with an existing email attaches that account as ADMIN silently | The typed password is ignored (`seedTenant`); root admin only |
+| G13 | No personal security history | The security page shows 2FA, passkeys and sessions, not sign-ins or password changes |
+
+**Managed logins and the flag**
+
+| # | Gap |
+|---|---|
+| G18 | ✅ **Built 22 Nov 2026** (API and web branch `managed-logins`). Managed logins: `POST /users/managed`, username unique within the pharmacy, contact email and phone kept by the pharmacy |
+| G19 | ✅ **Built.** Temporary password (8 characters, no look-alikes) shown once; until changed, only account routes answer (`403 password_change_required`) and the web app opens "Choose your own password" |
+| G20 | ✅ **Built.** Sign-in takes `username@CODE` in the normal box |
+| G21 | ✅ **Built** for reset (`POST /users/{id}/reset-password`, managed only, ends sessions). Unlock still works for every member until G10 |
+| G22 | No flow to link a managed login to a personal account |
+| G23 | ✅ **Built.** `tenants.direct_user_creation`, root admin only, on by default; off refuses managed logins and makes adding by email always invite |
+
+**Nice to have**
+
+| # | Gap |
+|---|---|
+| G14 | A person cannot leave a pharmacy themselves |
+| G15 | No pharmacy-owned staff details (staff number, job title, work contact) |
+| G16 | A pharmacy cannot require 2FA of its staff (only root admins can be required) |
+| G17 | The idle timeout is per session, not per pharmacy, so it flips when two tabs are in different pharmacies |
+
+**Order of work.**
+1. Record stamps carry the account id (G4).
+2. The flag and managed logins (G23, G18–G21).
+3. The invitation fixes (G1, G2, G11, G12).
+4. The leaks (G6–G8, G10).
+5. Email change, phone verification and recovery (G3, G9, G5, G13).
+6. Merging (G22).
+7. The rest (G14–G17).
+
+The QA harness and the simulated world create staff with `addMember` and an email, so they must move to managed logins or invitations with step 2 or 3.
+
 ---
 
 ## 10. Pharmacy operations coverage
