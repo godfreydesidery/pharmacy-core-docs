@@ -149,6 +149,27 @@ Each batch is about one PR per repo. Batches 1 and 2 are mostly small changes an
 
 ### Batch 3: Money and stock correctness
 
+> **Status 23 Nov 2026: built and tested (branch `batch3` in api; `batch3-money` in web and
+> docs).**
+>
+> Done:
+> - MON-3 to MON-20, except the blind stock count (it moves to Batch 4 with the approvals).
+> - MON-3 follows the owner's rule: a refund goes back the way the sale was paid, split by share.
+>   A part-cash, part-account return is now proportional; before, it settled the open charge
+>   first.
+> - MON-12 adds `409 busy_try_again` on lock clashes.
+> - MON-10 adds the generic `Idempotency-Key` header on 16 money routes.
+> - MON-13 adds automatic resubmission of failed postings, `GET /finance/reconciliation` and a
+>   ledger health check (kept out of readiness).
+> - Batch cost stays at 2 decimal places. Rounding is posted, so stock at cost equals ledger
+>   1200; a test asserts this after every step.
+>
+> Still open:
+> - Supplier returns do not yet reduce a receipt's open amount.
+> - Purchasing still rounds a foreign receipt's total to the cent once.
+> - The existing scheduled jobs still run on every instance; `SingleRunner` is ready for them in
+>   Batch 6.
+
 - **MON-3:** refund method limited by how the sale was paid.
 - **MON-4, MON-5:** insurance re-adjudication posts only the change. Returns on rejected claims go to the patient or reverse the write-off.
 - **MON-6, FRD-12:** stock-take difference worked out against movements since the count started. Blind counts.
