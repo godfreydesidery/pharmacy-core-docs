@@ -185,6 +185,44 @@ Each batch is about one PR per repo. Batches 1 and 2 are mostly small changes an
 
 ### Batch 4: Approvals and segregation of duties (needs owner decisions, see §4)
 
+> **Status 23 Nov 2026: built and tested (branch `batch4-core` in api; `batch4-controls` in web
+> and docs). The contract is in `contracts/api-v1.md` §19.**
+>
+> Done:
+> - **Approval engine.** `POST /approvals` with the manager's sign-in and password, never the
+>   requester's own, and the new `approvals.grant` permission. Approvals are single use, last two
+>   minutes and are kept in Postgres, so they work across instances. `X-Approval` is a list
+>   header, so one request may carry two approvals. The limit is per pharmacy (default TZS
+>   50,000), and some actions always need approval.
+> - **FRD-2, 4, 5, 6, 7, 8, 10, 11, 12, 14, 15, 16, 17** as decided in §4:
+>   - returns: the return window, a refund approval above the limit, and a restock choice
+>     (prescription and controlled medicines never go back on the shelf; they are held aside and
+>     can only be written off);
+>   - an open shift, which the till prompts for with the float suggested from the last count;
+>   - deep discounts and promotions need approval, and promotions are switched off, never
+>     deleted;
+>   - write-offs need a note and an approval, and the approving manager is the witness;
+>   - blind counts with a review step;
+>   - opening stock only during set-up;
+>   - recipes are enforced, with no downgrade of a medicine's class;
+>   - a class change needs approval, and the register lists every product that was ever
+>     controlled;
+>   - transfers: the sender cannot receive, shortfalls are recorded as a loss, and there is an
+>     overdue list;
+>   - the period-lock permission, with an approval to unlock;
+>   - credit limits have their own permission, and a credit write-off always needs approval;
+>   - a supplier return without its goods receipt needs `purchasing.manage`.
+> - **Roles.** New pharmacies get split presets. Existing pharmacies keep their roles (the
+>   backfills keep each role's abilities) and see a one-time "Recommended roles" notice.
+> - **Rehearsal.** Rehearsed on the QA copy: nine migrations ran in 5 to 24 ms. A pharmacist's
+>   return asked to open a shift, then for a manager's approval; self-approval was refused, and
+>   the return was recorded and held aside.
+>
+> Still open:
+> - FRD-19, the owner's digest of sensitive events (moves to Batch 6 with the alerts).
+> - FRD-16's supplier-return credit against a receipt.
+> - The pharmacy-world simulation must open shifts and handle approvals.
+
 - One approval engine: request, then approval by a different user with a PIN, with thresholds per pharmacy. Used for refunds, adjustments and destructions, write-offs, transfers, period unlock, schedule changes, voucher issue and large discounts or promotions (FRD-2, 4, 5, 6, 8, 10, 15, 16, 17).
 - New default role presets that separate selling from refunding, stock adjustment and catalogue editing.
 - **FRD-2:** recipes enforced. No controlled input into a non-controlled output.
