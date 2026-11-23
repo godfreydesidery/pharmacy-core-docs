@@ -23,6 +23,7 @@ The web app and any external system talk to the API only through the contract in
 | [`runbook/local-development.md`](runbook/local-development.md) | Run the API and the web app locally |
 | [`runbook/deployment.md`](runbook/deployment.md) | Configuration, database roles, migrations, probes, scaling |
 | [`runbook/simulated-world.md`](runbook/simulated-world.md) | The simulated clock (`sim` profile), and the simulated market that plays a quarter through the API and checks the books nightly |
+| [`privacy/`](privacy/README.md) | Privacy pack (Tanzania PDPA 2022): records of processing, data map and transfers, sub-processors, breach response, DPO, data subject requests, retention, processor agreement outline |
 | [`prototype/index.html`](prototype/index.html) | Clickable UI prototype (static, mock data) |
 | [`presentations/`](presentations/) | Stakeholder deck (PDF and its HTML source) |
 
