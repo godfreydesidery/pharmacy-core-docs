@@ -942,3 +942,74 @@ What it stores:
 - `actor` matches by "contains"; `from` and `to` are inclusive UTC days.
 
 The trail is partitioned by month, and row-level security shows a tenant only its own rows. The web app must not send `X-Tenant-Id` on `/platform/*` routes; it would scope them to that tenant.
+
+## 19. Approvals and pharmacy controls (Batch 4, owner's rules of 23 Nov 2026)
+
+A second person approves a sensitive action. It is the same for every action:
+
+1. The request is refused `403 approval_required`. The problem's extra members say what needs approving: `action` and `amount` (base currency, or a percent for `DEEP_DISCOUNT` and `DEEP_PROMOTION`).
+2. On the same screen a manager types their sign-in and password:
+
+   `POST /approvals` (TENANT, any signed-in member) `{ "action", "amount", "reference"?, "login", "password" }` → `201 { "token": "pap_…", "action", "amount", "approvedBy", "expiresAt" }`.
+
+   The approver holds `approvals.grant` in this pharmacy and branch and is never the requester. Refusals: `approver_is_requester` (422), `not_an_approver` (403), `invalid_credentials` (422), `invalid_action` (422). A wrong password counts towards the approver's lock-out.
+3. The same request is sent again with the header `X-Approval: pap_…`. The approval is single use, lasts two minutes, and covers that action for the requester up to its amount. A used, expired, smaller or other person's approval is `403 approval_invalid`.
+
+One request may need two approvals, for example a late return of a damaged controlled medicine. `X-Approval` is a list header (RFC 9110), so the request is sent with `X-Approval: pap_a, pap_b`; each action uses its own. An approval of another action does not stand in: that action is asked for (`approval_required`). Refused requests are not recorded by `Idempotency-Key`, so the retry keeps its key. Approvals are kept in `platform.approvals` and audited as `APPROVAL_GRANTED` and `APPROVAL_USED`. A root administrator needs none.
+
+| Action | When | Amount |
+|---|---|---|
+| `REFUND` | a return's refund above the limit | refund total |
+| `LATE_RETURN` | always, after the return window | refund total |
+| `VOUCHER` | a voucher above the limit | value |
+| `DEEP_DISCOUNT` | always, a till discount above `maxDiscountPercent` | percent |
+| `DEEP_PROMOTION` | always, saving an active promotion deeper than `maxDiscountPercent` | percent |
+| `SHIFT_VARIANCE` | closing a shift whose cash is off by more than the limit | the difference |
+| `STOCK_WRITE_OFF` | an adjustment, destruction or stock-take loss above the limit | value at cost |
+| `CONTROLLED_WRITE_OFF` | always, any write-off, destruction, count loss or transfer shortfall of a controlled medicine | value at cost |
+| `LATE_OPENING_STOCK` | always, opening stock in a branch that has sold, received goods or received a transfer | value at cost |
+| `SCHEDULE_CHANGE` | always, changing a product's dispensing class (form or import) | 0 |
+| `TRANSFER_SHORTFALL` | units short on a received transfer, above the limit | value at cost |
+| `PERIOD_UNLOCK` | always, moving the books' lock to an earlier date or removing it | 0 |
+| `CREDIT_WRITE_OFF` | always, writing off a customer's debt | the write-off |
+
+### Settings
+`Settings` gains:
+- `approvalLimit`: TZS 50,000 by default, `invalid_amount` when negative.
+- `returnWindowDays`: 7, between 0 and 365, else `invalid_return_window`.
+- `requireOpenShift`: on for new pharmacies (`pharmacy.tenancy.require-open-shift-by-default`), off for pharmacies that existed before.
+
+With `requireOpenShift`, a sale, a return and a voucher need the person's own open shift at the branch: `409 shift_required`.
+
+### Returns (`POST /sales/{uid}/returns`)
+- Each line takes `disposition`: `SHELF`, `QUARANTINE` (held aside) or `DAMAGED` (written off at cost).
+- A prescription or controlled line (by the class stored on the sale line, `lines[].schedule`) defaults to `QUARANTINE`, and `SHELF` is refused with `422 restock_not_allowed`.
+- Return lines show `uid`, `disposition`, `heldQuantity`, `releasedOutcome`, `releasedAt` and `releasedBy`.
+- `GET /sale-returns/held` (`sales.view`) lists the branch's returns with held units.
+- `POST /sales/returns/{returnUid}/lines/{lineUid}/release` (`sales.refund`) `{ "outcome": "SHELF" | "DAMAGED" }`. A prescription or controlled line can only be written off. Refusals: `nothing_held`, `invalid_outcome`.
+
+### Sales and promotions
+- Sale lines store `schedule`, `promotionUid` and `promotionName`; a sale stores `pricePlanSource` (`CUSTOMER`, `CHOSEN` or null).
+- `DELETE /promotions/{uid}` switches the promotion off and returns it: promotions are never deleted.
+
+### Stock
+- **Adjustments and destructions.** A reduction needs a `note`: `422 note_required`. When a manager approves, they become the destruction's witness; the typed witness is then optional. A destruction shows `witnessApproved`, `approvedByUid` and `typedWitnessName`.
+- **Stock-takes are blind.** While a count is `OPEN`, `expected`, `variance`, `varianceValue` and `lossValue` are null and `blind` is true. `GET /stock-counts/{uid}/review` (`inventory.adjust`) shows them before posting.
+- **Opening stock.** Into an existing batch at a different unit cost it is `422 batch_cost_differs` (field `unitCost`, member `batchUnitCost`).
+- **Repack, break bulk and compound** follow the pack link or formula: `no_recipe`, `recipe_mismatch`, `inputs_below_formula`. A prescription or controlled input cannot become a product of a lower class: `schedule_downgrade`.
+- **Controlled-drugs register.** `GET /controlled-drugs` lists every product that was ever controlled, with `schedule` and `controlledNow`.
+- **Transfers.**
+  - The person who sent a transfer cannot receive it: `422 receiver_is_sender`.
+  - `POST /transfers/{uid}/receive` takes `{ "note", "lines": [{ "batchUid" | "productUid", "receivedQuantity", "serialNumbers"? }] }`. Lines not named arrived in full. Units short need a note and are a loss of the sending branch.
+  - `GET /transfers?overdue=true&days=7` lists transfers in transit longer than `days` (1 to 365, else `invalid_days`).
+  - `TransferView` gains `dispatchedBy`, `dispatchedByUid`, `receivedBy` and `daysInTransit`. Lines gain `receivedQuantity`.
+
+### Roles, books and credit
+- **Role presets.** New pharmacies get split presets: Pharmacist has no `sales.refund`, `inventory.adjust`, `catalogue.manage` or `partners.credit_limit`. New permissions: `approvals.grant`, `finance.period_lock` and `partners.credit_limit`. Pharmacies that existed keep their roles; the backfills keep what each role could do.
+- **Recommended roles** (`users.manage`):
+  - `GET /roles/recommendations` → `{ presetsVersion, showNotice, dismissed, decision, decidedAt, decidedBy, roles: [{ roleUid, code, name, add: [], remove: [] }] }`.
+  - `POST /roles/recommendations/apply` sets the built-in roles to the presets (`409 last_admin`, `403 permission_not_held`).
+  - `POST /roles/recommendations/dismiss` keeps them.
+- **Period lock.** `PUT /finance/period-lock` needs `finance.period_lock`; moving it back needs `PERIOD_UNLOCK`.
+- **Credit limits.** Setting or changing a customer's credit limit needs `partners.credit_limit`: `403 credit_limit_not_allowed`. A customer `PUT` without `creditLimit` keeps the current limit. `PUT /customers/{uid}/credit-limit` `{ "creditLimit" }` changes only the limit.
+- **Supplier returns.** A supplier return without `goodsReceiptUid` needs `purchasing.manage`: `403 supplier_return_needs_receipt`.
