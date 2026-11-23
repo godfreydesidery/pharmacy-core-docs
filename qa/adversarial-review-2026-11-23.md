@@ -270,6 +270,28 @@ Each batch is about one PR per repo. Batches 1 and 2 are mostly small changes an
 
 ### Batch 6: Operations
 
+> **Status 23 Nov 2026: built (branch `batch6-core` in api; `batch6-web` in web; `batch6-docs`
+> here; new repo `pharmacy-core-infra`). The owner chose AWS af-south-1 (Cape Town).**
+>
+> Done:
+> - OPS-4: S3 storage, the local-to-S3 copy tool, the backup and restore scripts, and Drill 1 on the QA copy (125 tables, every count equal).
+> - OPS-5: a keyring with key ids, a key per purpose, and re-seal.
+> - OPS-7: job runs, Prometheus metrics, JSON logs and optional Sentry.
+> - OPS-8 and INT-12: jobs run once across instances; limiters are shared in Postgres; notifications reach every instance through LISTEN/NOTIFY.
+> - OPS-9: MigrationSafetyTest reads the real database and DO blocks.
+> - OPS-10: the migration lock timeout.
+> - OPS-11: the migrate-only and run-only modes.
+> - OPS-14: web CI, and deploys only from CI on main to ECS through OIDC, with images tagged by SHA.
+> - OPS-16 and OPS-17: pinned actions and images, Dependabot, Trivy and npm audit, SBOMs, `npm ci`, no legacy-peer-deps.
+> - OPS-15 groundwork: the `privacy/` pack (14 points for counsel).
+> - Terraform for ECS, RDS, S3, ALB, WAF, CloudWatch and GitHub OIDC; `terraform validate` passes, nothing is applied.
+>
+> Still open:
+> - Applying the infrastructure (needs the owner's AWS account and domain).
+> - Drill 2 on RDS and S3.
+> - TLS `verify-full` to RDS.
+> - The counsel points C1–C14 (C4, the transfer to South Africa, before the cut-over).
+
 - **OPS-4:** backups off Railway, a restore runbook and a restore drill; files moved to S3/R2.
 - **OPS-5:** key ids and a keyring so keys can be rotated; separate keys for TOTP and provider secrets.
 - **OPS-7:** job last-run/outcome table, metrics (Prometheus/OTel), an error tracker and alerts.

@@ -1093,3 +1093,21 @@ Text cells starting with `=`, `+`, `-`, `@`, tab or carriage return get a leadin
 - **`GET /receivables/accounts/{uid}`** needs `sales.sell` or `finance.view`.
 - **`GET /insurance/members/current`** needs `partners.view`.
 - **`access.session_pharmacies`** is reached only through SECURITY DEFINER functions.
+
+## 21. Operations (Batch 6, 23 Nov 2026)
+
+All root only (`platform.manage`, PLATFORM scope).
+
+| Route | Response |
+|---|---|
+| `GET /platform/jobs` | Per scheduled job: `lastRun`, `lastSucceededAt`, `lastFailure` (with `failures: [{tenantUid, error}]`), `lastSkippedAt`, `failedLast24Hours` |
+| `GET /platform/jobs/{job}/runs` | The job's recent runs: instance, start, end, outcome `OK`/`FAILED`/`SKIPPED`, message, failures |
+| `GET /platform/keys` | The keyring: active key per purpose (`totp`, `providers`, `webhooks`), counts per key id per sealed column, `toReseal`, `unknownKeys`, `removable` per key, the last re-seal run |
+| `POST /platform/keys/reseal` | `202`; re-seals every value under the active keys in batches, on one instance. `409 reseal_running` while one runs |
+
+Probes on the API port: `GET /livez`, `GET /readyz`. Metrics: `/actuator/prometheus` on the
+management port only.
+
+`POST /files/uploads/{uid}/complete` works again for browser uploads (it answered 404 since
+Batch 1: the permission check could not see a pending upload).
+
