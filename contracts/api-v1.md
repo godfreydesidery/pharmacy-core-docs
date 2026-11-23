@@ -73,6 +73,9 @@ Every route needs one permission (listed per route). A Root administrator holds 
 | `sales.view` | Sales history |
 | `sales.refund` | Sales returns |
 | `sales.discount` | Apply a discount at POS |
+| `sales.credit` | Sell on account: credit sales and balances put on account |
+| `sales.price_plan` | Sell under another pricing plan than the customer's own |
+| `sales.voucher` | Issue vouchers (`POST /vouchers`): prepaid value sold for money. Not in the Cashier or Pharmacist presets |
 | `inventory.view` | Stock, batches, expiry, movements |
 | `inventory.adjust` | Stock adjustments, opening stock |
 | `inventory.transfer` | Branch transfers |
