@@ -18,7 +18,7 @@ The HTTP contract between `pharmacy-core-api` and its clients (`pharmacy-core-we
 | `X-Tenant-Id: <tenantUid>` | every tenant route | The pharmacy business the request acts in. A member must hold a membership in it; the Root administrator may name any tenant. Ignored on `/platform/*` and account (`/auth/*`) routes. |
 | `X-Branch-Id: <branchUid>` | every branch route (marked **[branch]**) | The branch the request acts in. It must belong to the tenant and be one the membership may use. Optional on reports and the dashboard, where it is omitted to mean "all my branches". |
 | `X-Correlation-Id` | optional | Echoed back. Generated when absent. |
-| `Idempotency-Key` | optional on `POST /sales` | Same as `idempotencyKey` in the body. A repeated key returns the first sale instead of selling twice. |
+| `Idempotency-Key` | optional on `POST /sales` and the money-moving POSTs below | On `POST /sales`: same as `idempotencyKey` in the body; a repeated key returns the first sale. Elsewhere (IETF draft *The Idempotency-Key HTTP Header Field*, ≤ 255 visible ASCII characters), on: `/receivables/payments`, `/receivables/write-offs`, `/finance/supplier-payments`, `/expenses`, `/sales/{uid}/returns`, `/vouchers`, `/vouchers/{uid}/void`, `/stock/adjustments`, `/stock/opening`, `/transfers`, `/transfers/{uid}/receive`, `/insurance/remittances`, `/goods-receipts`, `/destructions`, `/supplier-returns`, `/pos/payment-requests`. The first request with a key is recorded; a repeat with the same body, route and user gets the stored 2xx answer with `Idempotent-Replayed: true` and nothing runs twice; another body → `422 idempotency_key_reused`; while the first still runs → `409 idempotency_in_progress`; a failed first request frees the key. Keys last 24 hours. A bad key → `400 invalid_idempotency_key`. |
 
 **Paths are read one way.** A path with `;`, an encoded `/`, `\` or `%`, `//`, a `.`/`..` segment or a control character answers `400 malformed_request`, before any route.
 
@@ -361,7 +361,7 @@ Currency rules for purchasing:
 | `POST /sales` | `CheckoutRequest` → `Sale` (201) |
 | `GET /sales?q=&status=&from=&to=` | page of `SaleSummary` (`q` matches number and customer) |
 | `GET /sales/{uid}` | `Sale` |
-| `POST /sales/{uid}/returns` | `{ "reason", "refundMethod", "lines": [{ "saleLineUid", "quantity" }] }` → `SaleReturn`. Stock goes back to the batch sold. |
+| `POST /sales/{uid}/returns` | `{ "reason", "lines": [{ "saleLineUid", "quantity" }] }` → `SaleReturn`. Stock goes back to the batch sold. The refund goes back **the way the sale was paid**, split by share (see Returns below); `refundMethod` is optional and, if sent, must be a way the sale was paid, else `422 refund_method_not_allowed`. |
 | `GET /sale-returns` | page of `SaleReturn` |
 
 `CheckoutRequest`:
@@ -452,11 +452,12 @@ SerialUnit { uid, productUid, serialNumber, batchUid, batchNumber, branchUid, st
 | Route | |
 |---|---|
 | `GET /expenses?category=&from=&to=` | page of `Expense` |
-| `POST /expenses` **[branch]** | `{ "category", "description", "amount", "expenseDate", "paymentMethod", "reference" }` → `Expense` |
+| `POST /expenses` **[branch]** | `{ "category", "description", "amount", "expenseDate", "paymentMethod", "reference" }` → `Expense`. `paymentMethod`: `CASH` (default) | `BANK_TRANSFER` | `CARD` | `CHEQUE` | `MOBILE_MONEY`, else `422 invalid_payment_method`; `expenseDate` not after today in the pharmacy's time zone (`422 future_date`). |
 | `GET /accounts` | `Account[]` with `balance` (chart of accounts) |
 | `GET /journal?from=&to=` | page of `JournalEntry` |
 | `GET /finance/supplier-payments?supplierUid=` | page of `SupplierPayment` |
-| `POST /finance/supplier-payments` | `{ "supplierUid", "amount", "currency", "rate", "paymentMethod", "reference", "goodsReceiptUids": [], "paidOn" }` → `SupplierPayment` (201). Posts Dr 2000 Accounts Payable / Cr the payment account, and the realised exchange difference to 7000. |
+| `POST /finance/supplier-payments` | `{ "supplierUid", "amount", "currency", "rate", "paymentMethod", "reference", "goodsReceiptUids": [], "paidOn" }` → `SupplierPayment` (201). Posts Dr 2000 Accounts Payable / Cr the payment account, and the realised exchange difference to 7000. Methods as for expenses (`BANK_TRANSFER` default); `paidOn` not in the future. The receipts named are settled in order, each up to what is still open of it; paying more than they leave open → `422 overpayment`. A payment naming no receipt is on account. |
+| `GET /finance/reconciliation?days=7` **[branch optional]** | Documents recorded more than 15 minutes and at most `days` (1–92) ago with no journal entry (sales, returns, vouchers, receipts, supplier returns and payments, customer payments, remittances, stock adjustments, expenses), oldest first. An empty list means the books hold every one. |
 
 - Expense `category`: `RENT` | `UTILITIES` | `SALARIES` | `TRANSPORT` | `MAINTENANCE` | `MARKETING` | `SUPPLIES` | `LICENCES` | `OTHER`.
 - `Account`: `{ "code": "1000", "name": "Cash", "type": "ASSET", "balance": 0 }`. Types: `ASSET` | `LIABILITY` | `EQUITY` | `REVENUE` | `EXPENSE`.
@@ -775,10 +776,14 @@ Every amount is in the base currency. An account opens the first time a customer
   - 422 `member_inactive`, `preauth_required`, `member_required`.
 - **Returns** (`POST /sales/{uid}/returns`):
   - The insurer's share of the refund (in proportion to the insurance paid) comes off the claim, which is voided if it is a fully returned DRAFT.
-  - On a credit sale, the patient's share first settles the sale's open charge as a credit note. The rest is refunded by `refundMethod`, or kept on the account when `refundMethod` is `CREDIT` or `ACCOUNT_CREDIT`.
-  - Refunds are in the base currency.
+  - Every way the sale was paid gets back its share, in proportion: the cash share in cash, a mobile money, card, bank or cheque share by that method, a credit or account-credit share to the customer's account (a credit note), a voucher share back onto the voucher, and the insurer's share off the claim. Shares add up over several returns; once the sale is fully returned each way has had back exactly what it kept. `SaleReturn.refunds` lists them: `[{ "method", "amount", "reference" }]`.
+  - `refundMethod`, if sent, must be one of the sale's ways; never `INSURANCE`; `CREDIT`/`ACCOUNT_CREDIT` only when the sale was partly on or from the account (never a walk-in); `VOUCHER` only for a voucher-paid sale. Else `422 refund_method_not_allowed`.
+  - Refunds are in the base currency; a foreign-currency refund only for a sale paid one way (`422 foreign_refund_not_allowed`).
+  - When a return brings back a line's last units it refunds what is left of the line, to the cent.
 
-`POST /pos/coverage-quote` **[branch]** · `sales.sell` takes `{ memberUid, lines: [{ productUid, quantity }], preauthNumber }` and returns `CoverageQuote`:
+`POST /pos/coverage-quote` **[branch]** · `sales.sell` takes `{ memberUid, customerUid, pricePlan, discountPercent, lines: [{ productUid, quantity }], preauthNumber }` and returns `CoverageQuote`, priced exactly as checkout will (plan, branch prices, promotions, quantity breaks). The member must belong to the customer: `422 member_not_of_customer` (also at checkout).
+
+When two tills need the same stock or customer at once and the database gives up waiting, the answer is `409 busy_try_again` with `Retry-After`: send the same request again (with the same idempotency key).
 
 ```json
 { "memberUid": "…", "covered": 11520.00, "copay": 1280.00, "notCovered": 0, "patientPays": 1280.00,
