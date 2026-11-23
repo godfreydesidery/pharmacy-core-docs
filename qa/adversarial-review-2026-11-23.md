@@ -305,6 +305,24 @@ Each batch is about one PR per repo. Batches 1 and 2 are mostly small changes an
 
 ### Batch 7: Performance
 
+> **Status 23 Nov 2026: built (api `batch7-core`; web `batch7-web`). Contract §22.**
+>
+> Done:
+> - PERF-1: outside calls happen outside the number lock (payments before the transaction, the tax receipt after commit). A 3-line sale takes 46 statements, down from 71.
+> - PERF-2: a bounded async executor, a 100-request cap per instance, and statement, lock and idle timeouts.
+> - PERF-4: daily balances, kept by trigger. Balances went from 219 ms to 1.9 ms on 900k lines.
+> - PERF-5: keyset exports and capped totals.
+> - PERF-6 and PERF-15: concurrent indexes, checked with EXPLAIN on inflated QA copies.
+> - PERF-7: ledger child rows are no longer audited (11 audit rows per sale down to 4).
+> - PERF-8: a product stock read model.
+> - PERF-9: a 30 s edge cache, evicted across instances. A cache hit takes 4 round trips instead of 16.
+> - PERF-10, PERF-11, PERF-13, PERF-14 (journal numbers by year), PERF-16 (N+1) and PERF-17/18.
+> - Web: Swahili is loaded on demand (771 kB down to 607 kB) and the fonts are self-hosted.
+>
+> Still open:
+> - The notifications sender pool is still unbounded.
+> - Supplier statements still load their full history.
+
 - **PERF-1:** payment and fiscal calls outside the stock/number transaction; the sale number taken last.
 - **PERF-2:** bounded async executor, global in-flight cap, role-level `statement_timeout` / `lock_timeout` / `idle_in_transaction_session_timeout`, scheduled resubmission of incomplete events.
 - **PERF-4:** daily account-balance read model.
