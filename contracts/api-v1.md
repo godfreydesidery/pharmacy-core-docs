@@ -15,10 +15,14 @@ The HTTP contract between `pharmacy-core-api` and its clients (`pharmacy-core-we
 | Header | When | Meaning |
 |---|---|---|
 | `Authorization: Bearer <token>` | every route except sign-in and health | Session token from `POST /auth/sign-in` |
-| `X-Tenant-Id: <tenantUid>` | every tenant route | The pharmacy business the request acts in. A member must hold a membership in it; the Root administrator may name any tenant. |
+| `X-Tenant-Id: <tenantUid>` | every tenant route | The pharmacy business the request acts in. A member must hold a membership in it; the Root administrator may name any tenant. Ignored on `/platform/*` and account (`/auth/*`) routes. |
 | `X-Branch-Id: <branchUid>` | every branch route (marked **[branch]**) | The branch the request acts in. It must belong to the tenant and be one the membership may use. Optional on reports and the dashboard, where it is omitted to mean "all my branches". |
 | `X-Correlation-Id` | optional | Echoed back. Generated when absent. |
 | `Idempotency-Key` | optional on `POST /sales` | Same as `idempotencyKey` in the body. A repeated key returns the first sale instead of selling twice. |
+
+**Paths are read one way.** A path with `;`, an encoded `/`, `\` or `%`, `//`, a `.`/`..` segment or a control character answers `400 malformed_request`, before any route.
+
+**Account messages** (`access.*` templates: invitation, reset, codes) are the platform's: a pharmacy's override answers `422 template_fixed`.
 
 ## 2. Envelopes
 
@@ -125,7 +129,7 @@ When the account has two-step verification on, sign-in answers **`202`** with a 
 { "challengeToken": "pch_…", "methods": ["TOTP", "RECOVERY_CODE", "PASSKEY"], "expiresAt": "…" }
 ```
 
-`user.twoFactorSetupRequired` is `true` for a root administrator without two-step verification when `pharmacy.access.require-2fa-for-root=true`. Until they set it up, every route except their own account routes answers `403 two_factor_setup_required`.
+`user.twoFactorSetupRequired` is `true` for a root administrator without two-step verification when `pharmacy.access.require-2fa-for-root=true` (the default; `PHARMACY_REQUIRE_2FA_FOR_ROOT`). Until they set it up, every route except their own account routes answers `403 two_factor_setup_required`.
 
 Errors:
 - `401 invalid_credentials`.
@@ -135,7 +139,23 @@ Errors:
 
 ### `GET /auth/me` → `Session` without `token` and `expiresAt`.
 ### `POST /auth/sign-out` → `200`, revokes the token.
-### `POST /auth/change-password` `{ "currentPassword", "newPassword" }` → `200`, and signs out every other session.
+### `POST /auth/change-password` `{ "currentPassword", "newPassword" }` → `200`, and signs out every other session. A wrong current password counts toward the account lock like a failed sign-in.
+
+### Passwords
+8 to 128 characters (counted as characters), no composition rules (NIST SP 800-63B). `422 common_password` for a commonly used password, one character repeated, a run such as `12345678` or `abcdefgh`, or one made of the account's email name; `422 weak_password` for the length. Stored as Argon2id (19 MiB, 2 iterations). `429` when the server is busy hashing.
+
+### Confirming it is you ("sudo mode") — `POST /auth/confirm-identity` `AUTHENTICATED`
+`{ "password", "code" }` → `200`. `code` (TOTP or recovery code) only when two-step verification is on; without it `422 invalid_code`; a wrong password `422 invalid_password`; both count toward the account lock.
+
+Routes that change how the account is entered (2FA setup, enable, disable and recovery codes; passkey options, register and delete; phone send and verify) need the session to have proved its password within **10 minutes** (`pharmacy.access.step-up-minutes`), at sign-in or here. Otherwise they answer `403 reauthentication_required`: ask for the password, call this route, and send the request again.
+
+A session records what it proved. `secondFactor` (used by a pharmacy's "Require two-factor") is true only for a session signed in with a TOTP or recovery code or a user-verified passkey, or one that just turned two-step verification on; an account that merely has a passkey does not count.
+
+### Reset links and codes
+- Only the newest reset link works; a completed reset, a new password or a new email ends the others. At most 3 links an hour per account (more are dropped with the same `202`).
+- A password reset (by email or phone) or a recovery removes every passkey and signs out every session.
+- A phone resets a password only if it was verified in the last 180 days; never for a root administrator.
+- Sent account messages (links, codes) keep no text: the delivery log shows that one was sent, `resend` answers `422 cannot_resend`, and a data export leaves the text out.
 
 ## 5. Platform (Root administrator) — `/platform` · `platform.manage`
 
@@ -198,6 +218,12 @@ Errors:
 | `POST /roles` | `{ "code", "name", "description", "permissions": [] }` → `Role` |
 | `PUT /roles/{uid}` | `{ "name", "description", "permissions": [] }` → `Role` (system roles: permissions only) |
 | `GET /permissions` | `[{ "code", "area", "description" }]` |
+
+Who may grant what (least privilege):
+- A role may include, and a member may be given a role with, only permissions the caller holds: `403 permission_not_held`.
+- The built-in Administrator role always has every permission: `422 admin_role_fixed`.
+- A change that would leave no active member able to manage people (deactivating, demoting, or taking `users.manage` from the role) is refused: `409 last_admin`.
+- `GET /roles` lists this pharmacy's roles only.
 
 `Member`: `{ "membershipUid", "userUid", "name", "email", "roleUid", "roleCode", "roleName", "allBranches", "branchUids", "active", "lastSignInAt", "createdAt" }`
 `Role`: `{ "uid", "code", "name", "description", "system", "permissions": [] }`
@@ -571,7 +597,8 @@ Without `X-Tenant-Id`, the inbox routes work at platform scope (for example, a r
 | `GET /notifications/unread-count` | `{ "count": 3 }` |
 | `POST /notifications/{uid}/read` | `{ "count" }` (the new unread count) · 404 `notification_not_found` |
 | `POST /notifications/read-all` | `{ "count": 0 }` |
-| `GET /notifications/stream?token=&tenant=` | Server-Sent Events, `text/event-stream` |
+| `POST /notifications/stream-ticket` | → `{ "ticket": "pst_…" }`, valid 60 seconds, for one stream |
+| `GET /notifications/stream?ticket=&tenant=` | Server-Sent Events, `text/event-stream`. Takes a ticket, never the session token (a URL ends up in logs); closes once the session ends. `401 stream_ticket_expired` |
 
 `InAppNotification`:
 
@@ -582,7 +609,7 @@ Without `X-Tenant-Id`, the inbox routes work at platform scope (for example, a r
 
 `severity` is `info`, `warning` or `critical`. `link` is an app route, or null.
 
-**The live stream.** The browser's `EventSource` cannot send headers, so this one route also accepts `?token=<session token>` and `?tenant=<tenantUid>` in place of `Authorization` and `X-Tenant-Id`. It sends these events:
+**The live stream.** The browser's `EventSource` cannot send headers, so this one route accepts `?ticket=` (from `POST /notifications/stream-ticket`, 60 seconds) and `?tenant=<tenantUid>` in place of `Authorization` and `X-Tenant-Id`. The session token itself is never accepted in the URL. It sends these events:
 
 - `ready` on connect, with data `{ "unreadCount": 3, "latest": null }`;
 - `notification` per new in-app message, with data `{ "unreadCount": 4, "latest": InAppNotification }`;

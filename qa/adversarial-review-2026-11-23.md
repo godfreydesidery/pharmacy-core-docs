@@ -110,6 +110,24 @@ Each batch is about one PR per repo. Batches 1 and 2 are mostly small changes an
 
 ### Batch 2: Accounts and sessions
 
+> **Status 23 Nov 2026: built and tested (branch `batch2-accounts` in api, web and docs).**
+>
+> Done:
+> - AUTH-1, AUTH-2, AUTH-4, AUTH-5, AUTH-6, AUTH-7, AUTH-8, AUTH-10, AUTH-11, AUTH-12, AUTH-15
+> - ISO-3, ISO-4, ISO-7, INT-3, INT-20
+> - the blocklist and Argon2 parts of STD-21
+>
+> Changed from the plan:
+> - Every session is signed out when an email changes.
+> - The minimum password length stays at 8, so a 15-character minimum for single-factor accounts is
+>   left for the owner to decide.
+>
+> Moved to a later batch:
+> - AUTH-13 (a revert link on email change)
+> - AUTH-14 (lockout abuse: shared counters with the multi-instance work)
+> - AUTH-16 (keyed hash for short codes)
+> - AUTH-17 (idle limit taken from each request's pharmacy)
+
 - **AUTH-1:** step-up check (password + TOTP, or a "recent sign-in" window of about 5 min) for passkey add/remove, phone verify, 2FA enable/disable and recovery codes.
 - **AUTH-1:** delete passkeys on password reset, phone reset and recovery.
 - **AUTH-1:** send notices for every security change.
