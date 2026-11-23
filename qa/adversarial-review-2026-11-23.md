@@ -233,6 +233,23 @@ Each batch is about one PR per repo. Batches 1 and 2 are mostly small changes an
 
 ### Batch 5: Integrations and bulk data
 
+> **Status 23 Nov 2026: built (branch `batch5-core` in api; `batch5-web` in web; `batch5-docs`
+> here). The contract is in `contracts/api-v1.md` §20.**
+>
+> Done:
+> - INT-1, 2, 5, 6, 7 (with PERF-12), 8, 10, 11 (with WEB-11), 13, 15, 16, 17.
+> - ISO-5, 6, 7, 9, 10, 11.
+> - Webhooks follow Standard Webhooks.
+> - The full export is a background job with a signed link, and runs on one instance at a time.
+> - `data.export` takes bulk customer export away from cashiers and pharmacists (PDPA).
+>
+> Still open:
+> - A recall's view still lists every branch's buyers to a branch-limited user.
+> - The insurance claim batch export needs only `finance.view`.
+> - `PharmacyVisitsImpl` keeps an in-memory write throttle (it is only a cache).
+> - Account messages that are queued or failed keep their link until sent or purged.
+> - `event_publication` has no tenant column or RLS. Erasure now removes a pharmacy's rows.
+
 - **INT-1:** zip-bomb and cell-size limits for imports.
 - **INT-2:** SMTP host public-address rule, allowed ports only, secrets dropped when the host changes, STARTTLS required.
 - **INT-5:** enforce the SMS plan cap.

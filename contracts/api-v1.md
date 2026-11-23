@@ -1013,3 +1013,83 @@ With `requireOpenShift`, a sale, a return and a voucher need the person's own op
 - **Period lock.** `PUT /finance/period-lock` needs `finance.period_lock`; moving it back needs `PERIOD_UNLOCK`.
 - **Credit limits.** Setting or changing a customer's credit limit needs `partners.credit_limit`: `403 credit_limit_not_allowed`. A customer `PUT` without `creditLimit` keeps the current limit. `PUT /customers/{uid}/credit-limit` `{ "creditLimit" }` changes only the limit.
 - **Supplier returns.** A supplier return without `goodsReceiptUid` needs `purchasing.manage`: `403 supplier_return_needs_receipt`.
+
+## 20. Integrations, bulk data and isolation (Batch 5, 23 Nov 2026)
+
+### Email server (SMTP) providers
+- **Host:** must be a public mail server. The rules are the same as for webhook targets, so no private, loopback, link-local or `*.internal` address: `422 smtp_host_not_allowed` (field `settings.host`).
+- **Port:** 25, 465, 587, 2525 or 2587, otherwise `422 smtp_port_not_allowed` (field `settings.port`). Port 465 uses implicit TLS; every other port requires STARTTLS, with the server name checked. The `tls` option is gone.
+- **Changing the host or port** drops the saved secrets: send `secrets.password` again with the change.
+- **When the rules apply:** on save, on "Send test" and before every send.
+- **Dev and tests only:** `pharmacy.notifications.smtp.allowed-hosts` skips the host and port rules.
+
+### SMS allowance
+- **What is capped:** the plan's `sms_per_month`, but only for SMS sent through the platform's account. A pharmacy with its own active SMS provider is not capped.
+- **How it counts:** SENT messages in the pharmacy's calendar month, in its own time zone.
+- **Over the cap:**
+  - The message is FAILED with `reason: "sms_cap_reached"`, and the admins get one inbox notice a month.
+  - "Send test" answers `422 sms_cap_reached`.
+- **Delivery rows** carry a new field, `reason`.
+
+### Webhooks (Standard Webhooks)
+- **Headers:**
+  - `webhook-id`: the event id, the same on every retry.
+  - `webhook-timestamp`: Unix seconds.
+  - `webhook-signature`: `v1,<base64 HMAC-SHA256("id.timestamp.body")>`, keyed with the base64 part of `whsec_…`.
+  - Receivers should reject a timestamp more than 5 minutes off.
+  - `X-Pharmacy-Signature` is deprecated and will be removed next release.
+- **The secret** is sealed at rest. It is shown once, on create and on rotation.
+- **Rotation:** `POST /webhooks/{uid}/rotate-secret` returns `{…, secret, previousSecretUntil}`. For 24 hours the signature header carries two space-separated `v1,` values, new and old.
+- **Limit:** at most 10 webhooks per pharmacy, `422 webhook_limit`.
+
+### Payments
+- **The SIMULATOR adapter** exists only in the `sim`, `local` and `test` profiles. Elsewhere it is `422 adapter_not_available`.
+- **Push payments:** a push request used for another method or branch is `422 payment_mismatch`.
+
+### Imports
+- **Workbooks** are checked before reading. Refusals (all 422):
+  - `file_too_many_entries`: more than 1,000 parts.
+  - `file_too_large_uncompressed`: more than 50 MB unpacked.
+  - `file_too_compressed`: a part expands more than 100:1.
+  - `file_not_allowed`: encrypted, or an unknown packing.
+- **Workbooks and CSV:**
+  - `cell_too_long`: a cell longer than 32,767 characters.
+  - `too_many_columns`: data past column 200.
+  - `too_many_rows`: more than 5,000 rows (as before).
+
+### The pharmacy's full export (background job)
+- **Starting:** `POST /data-export` (`settings.manage`, allowed while unpaid or closed) answers `202 { uid, status, requestedAt, requestedBy }`. One export runs at a time: `409 export_running`, with the running job's `uid` in the problem.
+- **Polling:** `GET /data-export/{uid}` gives `status`: `PENDING`, `RUNNING`, `READY`, `FAILED` or `EXPIRED`. When `READY` it also gives:
+  - `downloadUrl`: a signed link, opened without auth headers, valid 15 minutes. GET the status again for a fresh one.
+  - `downloadExpiresAt`;
+  - `expiresAt`: the file is kept 7 days;
+  - `sizeBytes`.
+
+  An unknown uid is `404 export_not_found`.
+- **How it is built:** in short paged transactions, so it is not one snapshot; the manifest says so.
+- **Columns:** they are explicit. Root's internal notes are left out, and former staff appear with the details the pharmacy kept (`former_*`).
+- **The old routes:** `GET /data-export` and root's `GET /platform/tenants/{uid}/export` still work, and also take the one-at-a-time slot.
+
+### Spreadsheet exports
+Text cells starting with `=`, `+`, `-`, `@`, tab or carriage return get a leading `'` (OWASP CSV injection). Numbers stay numeric.
+
+### Retention, legal hold and erasure
+- **Legal hold:** the nightly purge skips held pharmacies. An audit month is kept while any held pharmacy has entries in it.
+- **Date limits:** retention cut-offs are never later than `now()`, and audit entries are kept at least 2 years (`audit.minimum_retention()`).
+- **`erase_tenant`:** checks the cooling-off against `now()`. It also removes the pharmacy's event publications. File deletes that fail are retried nightly.
+
+### People, roles and branches
+- **Users cap:** counts active members plus pending invitations. It is checked on invite, add, managed login, reactivation and acceptance. Refusal: `422 plan_limit_reached`.
+- **`PUT /users/{membershipUid}`:** a missing `active` keeps the member as they are.
+- **A former member** is shown by the details this pharmacy kept, both in the cashier report and in the account locks list (active members only).
+- **Roles:**
+  - `GET /roles` lists this pharmacy's roles only.
+  - Writes to roles, memberships, role permissions and membership branches must belong to the current pharmacy (row-level security WITH CHECK).
+- **Branches:** a branch named in the body must be one the caller may use: `403 branch_not_allowed`. This covers branch prices, and recalls when the batch is held at other branches.
+- **New permission `data.export`** ("Export people's data in bulk"):
+  - Needed, together with the view permission, for `GET /customers/export` and the controlled-drugs register export.
+  - Presets: Administrator, Branch Manager and Accountant.
+  - Cashiers, pharmacists and store keepers no longer bulk-export customers, a privacy fix (PDPA).
+- **`GET /receivables/accounts/{uid}`** needs `sales.sell` or `finance.view`.
+- **`GET /insurance/members/current`** needs `partners.view`.
+- **`access.session_pharmacies`** is reached only through SECURITY DEFINER functions.
