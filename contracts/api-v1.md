@@ -1111,3 +1111,38 @@ management port only.
 `POST /files/uploads/{uid}/complete` works again for browser uploads (it answered 404 since
 Batch 1: the permission check could not see a pending upload).
 
+## 22. Performance changes (Batch 7, 23 Nov 2026)
+
+**Lists and exports**
+- Lists ordered by uid count at most 10,001 rows. Above that, `total` is `10000` and `totalCapped: true`; on an exact total it is `false`, and `null` when there is no total. A first page that holds the whole list, and a short last page, are not counted.
+- Exports read in keyset pages of 500.
+
+**Load limits**
+- `503 server_busy` with `Retry-After: 2` when an instance has 100 requests in progress. It is refused before any work.
+- `503 database_busy` (`Retry-After`) for a statement over 30 s, or no free connection within 10 s.
+- A lock wait over 5 s answers `409 busy_try_again`.
+
+**Sales**
+- Payments are checked before the sale's transaction. A push request still pending is `422 payment_declined`.
+- The tax receipt is issued after commit. `SaleView.fiscalDue` is true until `fiscalReference` is set; with no fiscal provider it is false.
+
+**Price lists**
+- `GET /price-lists` returns plans with `items: null` and `itemCount`.
+- `GET /price-lists/{uid}` returns one plan with its items.
+- `PUT /price-lists/{uid}` with `items` null or `[]` keeps the plan's items.
+
+**Customer statements.** `GET /receivables/accounts/{uid}/statement`:
+- Without `from`, it covers the 90 days up to `to`; `to` defaults to the pharmacy's today.
+- `openingBalance` is the balance brought forward.
+- It pages with cursor and limit (at most 100 per page).
+- `from` after `to` is `422 invalid_period`.
+
+**Reports**
+- `/reports/sales`, `/products`, `/profit-loss`, `/payments`, `/vat` and `/cashiers` refuse a period over 366 days: `422 period_too_long`.
+- `invalid_range` now means only that `from` is after `to`.
+
+**Finance**
+- New: `GET /finance/reconciliation/balances?days=7` (`finance.view`) returns `[{accountCode, day, branchUid, journalDebit, journalCredit, readModelDebit, readModelCredit}]`, the days where the daily balances disagree with the journal. An empty list means they agree.
+- Journal numbers are now `JV-<year>-000001` per pharmacy and year, without gaps. Old numbers stay.
+- Balances, the trial balance, the balance sheet and VAT read the daily balances. The stock list reads the per-product stock summary.
+
