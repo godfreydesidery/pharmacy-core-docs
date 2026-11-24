@@ -1264,7 +1264,7 @@ The complete, generated reference is now `docs/openapi.json` in the api repo (Op
 
 **Customers at the till**
 - `POST /customers` accepts any of `partners.manage` or the new `partners.create_at_till` (Cashier and Pharmacist; built-in roles backfilled by access V21).
-- With only the latter, the request may set name, phone, email, type RETAIL and active true. Anything else is `422 field_not_allowed`, with `field` naming it.
+- With only the latter, the request may set name, phone, email, type RETAIL, active true, and `consents` for `SMS_RECEIPTS` and `MARKETING` (what the customer agreed to when asked; the till sends only the ones given). Anything else, `INSURER_SHARING` included, is `422 field_not_allowed`, with `field` naming it.
 
 **Files and messages**
 - **Upload links work once:** a second `PUT` of an upload URL is `409 upload_used`, even after `complete`. A failed PUT may be retried with the same link while it is valid.
