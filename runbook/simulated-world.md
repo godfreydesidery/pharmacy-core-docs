@@ -177,8 +177,10 @@ Other checks run inline as the world works:
   count loss or a till difference above the pharmacy's limit; any controlled write-off), a second
   person approves on the same screen (`POST /approvals` with their sign-in and password, then the
   request again with `X-Approval`). The approver is an owner or a branch manager of that branch,
-  never the requester; the first approval in each pharmacy also proves the API refuses
-  self-approval. The focal chains keep a TZS 2,000 limit, so approvals happen every day.
+  never the requester, except a shop's owner when the API offers self-approval (nobody else
+  there could approve; recorded as a self-approval). The first approval in each pharmacy also
+  proves the API refuses self-approval where someone else could approve. Every focal pharmacy
+  keeps a TZS 2,000 limit, so approvals and self-approvals happen every day.
 
 A failure is written to `pharmacy-world/.data/findings.jsonl` and shown in the report. When a check
 fails, find the root cause before trusting the count. One bug can fail hundreds of nightly checks.
@@ -189,7 +191,7 @@ fails, find the root cause before trusting the count. One bug can fail hundreds 
 |---|---|---|
 | Quarter 1 (Jan 2027 sim) | Receiving more of a batch at a new cost kept the old cost; the ledger's inventory drifted above stock at cost | `pharmacy-core-api` PR #6: weighted-average batch cost |
 | Quarter 1 (Dec 2026 sim) | Simultaneous sign-ins of one person returned 409 `stale_version` | `pharmacy-core-api` PR #6: the sign-in update skips the version check |
-| Batch 10 run (28 Dec 2026 sim) | Two claim rejections charged to one new patient at once both create the patient's receivable account; the second fails on `accounts_tenant_uid_customer_uid_key` and waits for the event's redelivery, so until then ledger 1100 is above what customers owe (TZS 500 in TUMAINI) | Open: make the account's creation idempotent (insert … on conflict do nothing, then read) |
+| Batch 10 run (28 Dec 2026 sim) | Two claim rejections charged to one new patient at once both create the patient's receivable account; the second fails on `accounts_tenant_uid_customer_uid_key` and waits for the event's redelivery, so until then ledger 1100 is above what customers owe (TZS 500 in TUMAINI) | Batch 10: opening the account takes the customer's credit lock and reads again (ReceivableAccountRaceTest) |
 
 ### Gotchas
 
@@ -202,8 +204,8 @@ fails, find the root cause before trusting the count. One bug can fail hundreds 
 - **Phones.** The API keeps every phone in E.164 (`+255…`), turning a local number into it with the
   pharmacy's country code.
 - **Roles.** Pharmacists sell and dispense but do not refund or adjust stock; store keepers and
-  managers adjust; managers refund and approve. A shop whose only manager is the one asking cannot
-  get an approval: the world counts it as `approval-unavailable`.
+  managers adjust; managers refund and approve. A shop whose owner is its only manager approves
+  its own requests (`approval-self`).
 - **List size.** List pages hold at most 100 items.
 - **The web app's date.** "Today" is the browser's real date. Move the date pickers into the
   simulated quarter.
