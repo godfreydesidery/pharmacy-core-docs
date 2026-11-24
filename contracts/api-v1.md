@@ -1246,3 +1246,191 @@ The complete, generated reference is now `docs/openapi.json` in the api repo (Op
 | `health.view` | Administrator, Branch Manager, Pharmacist | Built-in Administrator, Branch Manager and Pharmacist, plus custom roles holding `sales.refund` or `catalogue.manage` |
 | `adr.report` | Administrator, Branch Manager, Pharmacist | Same as `health.view` |
 
+## 25. Batch 10: leftovers and the owner's decisions (24 Nov 2026)
+
+`docs/openapi.json` in the api repo is the complete reference; this is the readable summary. The contract version is now **1.10.0** (`X-Api-Version`).
+
+### Security and privacy (Batch 10, stream 1)
+
+**Health data**
+- **Prescription scans:** a file of a SALE, or any file with purpose PRESCRIPTION, needs `health.view` on top of the owner type's permission. This applies to `GET /files` (list), `/files/{uid}/url` and `/files/{uid}/download`.
+  - Without it, a SALE's list is `403 forbidden`; other owners' lists leave the prescription out.
+  - Each link handed out is audited as `PRESCRIPTION_FILE_VIEWED`. Attaching still needs only the attach permission.
+- **Recalls:** `GET /recalls/batches/{uid}` lists only the caller's branches' sales, and `patientName` is null without `health.view`.
+- **Claim batch export:** `GET /insurance/batches/{uid}/export` needs `finance.view` and the new `insurance.claims_export`.
+  - It is audited as `CLAIM_BATCH_EXPORTED`.
+  - The permission opens no health records.
+  - Holders: Administrator, Branch Manager and Accountant. access V21 backfilled the built-in ones, plus each pharmacy's own roles that hold `finance.view` together with `data.export` or `finance.manage`.
+
+**Customers at the till**
+- `POST /customers` accepts any of `partners.manage` or the new `partners.create_at_till` (Cashier and Pharmacist; built-in roles backfilled by access V21).
+- With only the latter, the request may set name, phone, email, type RETAIL and active true. Anything else is `422 field_not_allowed`, with `field` naming it.
+
+**Files and messages**
+- **Upload links work once:** a second `PUT` of an upload URL is `409 upload_used`, even after `complete`. A failed PUT may be retried with the same link while it is valid.
+- **Account messages** (category `access`) are sealed while queued, and forgotten once sent or given up. The delivery log shows a placeholder for a sealed body.
+
+**Accounts and sessions**
+- **Email change undo:** after an email change, the old address gets `access.email_changed` with a link `/revert-email?token=per_…`, valid 7 days and single use.
+  - `POST /auth/email-change/revert {token, newPassword}` is public. It puts the old address back and sets the password.
+  - It also signs out every session, removes passkeys, turns off two-factor turned on after the change, and cancels later changes.
+  - Refusals: `422 invalid_token`, `422 password_required` / `weak_password` / `password_too_short`, `409 email_taken`.
+  - There is no undo link after a support recovery (`access.email_recovered`). Audit: `EMAIL_CHANGE_REVERTED`.
+- **Inactivity limit:** every tenant request is held to that pharmacy's `idleMinutes`.
+  - A session unused for longer gets `401 session_idle`, with `idleMinutes`.
+  - A stricter limit becomes the session's limit for every later request and for `/auth/activity`.
+- **Codes:** recovery and SMS codes are stored as keyed hashes (HMAC-SHA-256, keyring purpose `codes`). Codes issued before still work.
+
+**Integrations and events**
+- **Webhooks:** a delivery connects only to the addresses checked just before it. NAT64, 6to4, Teredo and the other IPv4-carrying IPv6 ranges are refused (`webhook_url_not_allowed`).
+- **Events:** `voucher.issued` carries the voucher code masked (`••••` + last four). The app role cannot delete from `event_publication`.
+- **Web:** the temporary password is handed to `/choose-password` in memory, never in history state.
+
+### Money, audit and operations (Batch 10, stream 2)
+
+**Supplier returns and credit notes (FRD-16, Batch 3 "still open")**
+- A new supplier return is `status: PENDING_CREDIT` (earlier ones are `CREDITED`). `SupplierReturnView`
+  gains `status` and `credit` (`{number, date, currency, amount, baseAmount, appliedToReceipt,
+  recordedAt, recordedBy}`, null while pending and for returns from before credit notes).
+- `GET /supplier-returns?status=PENDING_CREDIT|CREDITED` (422 `invalid_status`).
+- `POST /supplier-returns/{uid}/credit-note` — `finance.manage`, TENANT_OPTIONAL_BRANCH, idempotent.
+  Body `{number, date?, amount}`; `amount` is in the goods receipt's currency (base currency without
+  a receipt), `date` defaults to today. 200 with the return. 404 `supplier_return_not_found`,
+  409 `return_already_credited`, 422 `invalid_amount`, `future_date`, `duplicate_credit_note`
+  (`number`), `credit_exceeds_receipt` (`receipt`, `total`, `currency`).
+- Ledger: a pending return posts Dr 1160 *Supplier Returns Awaiting Credit* / Cr 1200; the credit
+  note posts Dr 2000 (credit at the receipt's booked rate) / Cr 1160 (return at cost), the difference
+  to 5100. Journal source type `SUPPLIER_CREDIT` (source uid = the return).
+- Of the credit, what is still open on the receipt (`appliedToReceipt`) comes off it: a supplier
+  payment naming the receipt can settle only `total − payments − credited returns`
+  (422 `overpayment` with `open`). The rest is credit on the supplier's account.
+- `GET /suppliers/balances`: rows gain `awaitingCredit` (returns pending a credit note, not yet
+  in `balance`); `returned` counts credited returns at their credit value.
+
+**Foreign-currency receipts (STD-17)**
+- `baseTotal` (the payable) is the receipt's total converted once (HALF_UP, base minor units). Each
+  line's `baseValue` (new in `ReceiptLineView`) is its line total converted once and is what the
+  stock is received at. The difference (`base_rounding`, purchasing/V9) posts to 7000.
+
+**Supplier statement (PERF-5)**
+- `GET /suppliers/{uid}/statement?from&to&cursor&limit` — local days, default the 90 days to today,
+  at most 366 days (422 `period_too_long`, `invalid_period`, `invalid_cursor`); `limit` 1–100
+  (default 100). Answer: `{supplierUid, supplierName, from, to, opening, lines[], balance,
+  nextCursor}`; `opening` is owed before `from`, `balance` at the end of `to`, each line carries
+  its running balance across pages.
+
+**Audit (STD-22, FRD-19, OPS-18)**
+- `AuditEntryView` gains `ip`, `userAgent`, `sessionUid`, `outcome` (`SUCCESS`/`FAILURE`; null for
+  older entries).
+- New entries: `DATA_EXPORTED` (every attachment answered by `/api`: `request`, `query`, `file`,
+  `rows`), `STOCK_ADJUSTED` (each adjustment), `ROOT_ACTED_IN_TENANT` now on **every** root request
+  in a pharmacy (with `request`, `status`), `ROOT_REQUEST` for root's platform requests.
+- Metric `pharmacy.audit.default_partition.rows`; log `AUDIT_DEFAULT_PARTITION_ROWS`;
+  `select audit.repair_default_partition()` (runbook "Audit default partition"); setting
+  `PHARMACY_AUDIT_REPAIR_DEFAULT_PARTITION` (default false).
+
+**Owner digest (FRD-19)**
+- Setting `sensitiveDigest` (boolean, default true) in `GET/PUT /settings`.
+- Job `sensitive-digest` (every 15 min, one instance): at 07:00 local, the day before's sensitive
+  actions to `settings.manage` holders, in-app + email, template `tenant.sensitive_digest`
+  (params `pharmacyName, date, count, summary, items, link`), dedup per day.
+
+**Till events (FRD-20)**
+- `POST /till-events` — `sales.sell`, BRANCH. Body `{kind, lines?, value?, reason?}`, `kind` one of
+  `CART_CANCELLED, CART_CLEARED, PARKED_DISCARDED, NO_SALE`. 201 `{uid, kind, lines, value, day,
+  shiftUid}`. 422 `invalid_event_kind`, `invalid_lines`, `invalid_amount`.
+- `GET /reports/till-events?from&to` — `reports.view`, TENANT_OPTIONAL_BRANCH; at most 92 days
+  (default the last 7); rows `{day, branchUid, cashierUid, cashierName, kind, events, lines, value}`.
+
+**Operations**
+- Notification senders bounded: `PHARMACY_NOTIFY_THREADS` (8), `PHARMACY_NOTIFY_QUEUE` (2,000); a
+  dropped dispatch logs `NOTIFY_REJECTED`, counts `pharmacy.notifications.senders.rejected`; gauges
+  `pharmacy.notifications.senders.queued|active`.
+
+### Standards (Batch 10, stream 4)
+
+**Responses**
+- **Problems:** `type` is now `/problems/<reason>`, relative to the API (RFC 9457 §3.1.1). `GET /problems/{reason}` (public, text/plain) describes it. `reason` and every other member are unchanged.
+- **401s:** every 401 carries `WWW-Authenticate: Bearer realm="pharmacy-core"`, plus `error="invalid_token"` for `session_expired`, `session_idle` and `stream_ticket_expired`.
+- **201s:** a 201 names what it created in `Location` (`/api/v1/<collection>/<uid>`) when a GET route serves it. A replayed idempotent answer carries no Location.
+- **Version:** `X-Api-Version: 1.10.0` is on every `/api` answer and equals OpenAPI `info.version` (SemVer of the contract; the major is the path version).
+  - `/actuator/info` gives `build.version`, `build.time` and `api.version`.
+  - CORS exposes `Location` and `X-Api-Version`.
+
+**Numbers and data**
+- **Invoice numbers:** one series per branch (`sale:<branch code>`), whatever the `invoicePrefix`. A new prefix carries on the count (INV-HQ-000041 → RCP-HQ-000042). sales V21 started each series after the highest number already used.
+- **Phones:** stored in E.164 for customers, suppliers, branches, the pharmacy's contact phone, and staff contact and work phones.
+  - A local number takes the pharmacy's country code: 0754 000 111 → +255754000111 (KE, UG, RW and others by `country`).
+  - Unreadable input is `422 invalid_phone`. A stored legacy value sent back unchanged is kept.
+  - Customer and supplier `q=` finds phones by the digits as typed.
+  - partners V10, tenancy V17 and access V23 normalised stored phones; unreadable ones were left as they were.
+- **FHIR claim export** (`…/fhir`): absent elements are omitted (never "", null, [] or {}).
+
+**Approvals and fixes**
+- **Owner self-approval:** when no other active member who could approve a request exists (holds `approvals.grant` and has access to its branch), the pharmacy's OWNER may approve their own request with their password.
+  - The approval carries `selfApproved: true` and is audited as a self-approval.
+  - As soon as a second eligible approver exists, self-approval is refused again. Non-owners can never self-approve.
+- **Receivables:** a patient's receivable account is created idempotently, so two claim rejections at once no longer fail.
+
+### The owner's decisions of 24 Nov 2026 (Batch 10, stream 5)
+
+**Settings** (`GET/PUT /settings`, `settings.manage`, If-Match as before; every change audited as `SETTINGS_CHANGED`, old → new)
+- `sharedCounterPcs` (false): the web keeps the session in sessionStorage (it ends with the browser) and parked sales end with the pharmacy's local day. The API idle limit is unchanged.
+- `expiryProvisionEnabled` (true), `expiryProvisionBands` (`[{daysToExpiry:0,percent:100},{30,50},{90,25}]`): 1–5 bands, days 0–730 rising, percent 0–100 not rising. `422 invalid_provision_bands` (`maxBands`, `maxDays`).
+- `vatApportionmentMethod` AUTOMATIC | FIXED (AUTOMATIC), `vatFixedRecoverablePercent` (0–100, required for FIXED), `vatYearEndMonth` (12), `vatRatioRoundUp` (true). `422 invalid_apportionment_method`, `invalid_recoverable_percent` (`min`, `max`), `recoverable_percent_required`, `invalid_year_end_month`.
+- A rule change applies from the next monthly run; each run records the rule it used.
+
+**Passwords (STD-21)**
+- A password needs 15 characters when it is the account's only factor and 8 when the account has two-factor (TOTP or a passkey). New accounts start at 15. `422 password_too_short` (`minLength`, `twoFactor`). Above 128 characters: `weak_password`. Existing passwords keep working.
+- `GET /auth/security` adds `minPasswordLength` and `passwordLongEnoughAlone`.
+- Turning two-factor off, or removing the last passkey, while the password is not known to have 15 characters: `409 password_too_short_without_two_factor` (`minLength`). Change the password first.
+- Temporary staff passwords now have 16 characters (`XXXX-XXXX-XXXX-XXXX`).
+
+**Two root administrators (FRD-18)**, all `platform.manage`
+
+| Route | Notes |
+|---|---|
+| `GET /platform/approvals?status=PENDING\|ALL` | returns `RootApproval[]` |
+| `POST /platform/approvals` `{action, tenantUid, reason, confirmCode?}` | `action` is LIFT_LEGAL_HOLD or ERASE_TENANT; ERASE_TENANT needs `confirmCode`. Returns 201 PENDING. Refusals: `409 second_root_admin_required`, `409 root_approval_pending`, `422 not_under_legal_hold`, `confirm_code_mismatch`, `erase_refused` |
+| `POST /platform/approvals/{uid}/approve` `{password, code?}` | made by a different root administrator. Runs the action and returns it EXECUTED with `tenant` and, for an erasure, `rows`. Refusals: `403 approver_is_requester`, `409 root_approval_closed`, `409 root_approval_expired` (after 24 h), `422 invalid_password`, `invalid_code` |
+| `POST /platform/approvals/{uid}/cancel` | |
+
+- `DELETE /platform/tenants/{uid}/legal-hold` and `POST /platform/tenants/{uid}/erase` now answer `403 root_approval_required` (`action`).
+- Each step is audited at platform level: ROOT_APPROVAL_REQUESTED, ROOT_APPROVAL_APPROVED, ROOT_APPROVAL_FAILED and ROOT_APPROVAL_CANCELLED.
+
+**Expiry write-down (STD-3)**
+- A job, `expiry-provision`, runs hourly on one instance. On days 1–7 of each pharmacy's local month it measures the month before.
+- Stock is kept at FEFO batch cost. The provision is the cost of stock in each band × the band's percent, at the month's last day.
+- Only the change from the last run is posted: Dr 5110 Expiry Write-down / Cr 1210 Inventory Expiry Provision, or the reverse when the provision falls. When the write-down is turned off, the provision is released.
+- 1210 is an asset account with a credit balance, so the balance sheet shows inventory net of the provision.
+- `GET /reports/expiry-provision?from&to` (`finance.view`) lists the runs by branch and band.
+- `POST /finance/expiry-provision/runs` (`finance.manage`) runs the last complete month now.
+- `finance.journal_lines` has a new check: a line is never both a debit and a credit (`journal_lines_debit_or_credit`). Amounts were already ≥ 0.
+
+**VAT apportionment and debit notes (STD-2)**
+- A job, `vat-apportionment`, runs on the same schedule. Its MONTHLY run splits input VAT:
+  - Receipts and supplier debit notes are split by their lines' product category. EXEMPT lines are not reclaimable; STANDARD and ZERO_RATED lines are reclaimable.
+  - Expenses are residual.
+  - The residual is reclaimable at the ratio: the taxable share of sales (AUTOMATIC) or the fixed percent.
+  - The non-reclaimable part moves Dr 5150 Non-reclaimable Input VAT / Cr 1150.
+- In the year-end month an ANNUAL run trues up the whole year (AUTOMATIC only).
+- `GET /reports/vat` adds `inputVatBeforeApportionment`, `nonReclaimableInputVat`, `reclaimableInputVat` (equal to `inputVat`), `apportionments[]`, and `debitNotes {salesNet, salesTax, purchasesNet, purchasesVat}`. Each `categories[]` entry adds `debitNotesNet` and `debitNotesTax`.
+- `GET /reports/vat-apportionment` lists the runs. `POST /finance/vat-apportionment/runs` (`finance.manage`) runs the last complete month now.
+
+Sales debit note:
+- Routes: `POST /sales/{uid}/debit-notes {netAmount, taxCategory?, reason}` (`finance.manage`, returns 201 `SDN-<branch>-000001`) and `GET /sales/{uid}/debit-notes` (`finance.view`).
+- VAT is charged at the standard rate on a STANDARD note while the pharmacy is registered.
+- The total is charged to the sale's customer account: the statement shows a CHARGE whose reference is the note number.
+- Posting: Dr 1100 / Cr 4000 and 2100.
+- When the sale has a fiscal receipt, the note gets a fiscal DEBIT_NOTE document through the fiscal port.
+- Refusal: `422 debit_note_needs_customer`.
+
+Supplier debit note:
+- Routes: `POST /goods-receipts/{uid}/debit-notes {netAmount, vatAmount, reason, supplierReference}` (`finance.manage`, returns 201 `PDN-<branch>-000001`) and `GET` on the same path.
+- Posting: Dr 5120 Purchase Price Differences and 1150 / Cr 2000. The batch cost is not changed.
+- The supplier statement shows a `DEBIT_NOTE` line, and supplier balances include it.
+- Refusals: `422 debit_note_base_currency_only`, `vat_not_registered`.
+
+**Fiscal (VFD provider)**
+- A provider adapter is one `@Component` implementing `sales.ports.outbound.FiscalReceipts`, with `@ConditionalOnProperty(name = "pharmacy.integrations.fiscal.provider", havingValue = "<provider>")` and its own `provider()`.
+- It handles RECEIPT, CREDIT_NOTE, DEBIT_NOTE and Z_REPORT.
