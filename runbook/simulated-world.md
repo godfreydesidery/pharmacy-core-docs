@@ -105,6 +105,8 @@ npm run down                     # stops the API (database first), Mailpit and t
 | `touch .data/stop` | Stops cleanly after the day under way |
 | `clock` / `clock P1D` | Shows or advances the simulated time |
 | `reset --yes` | Deletes the world (database, files, clock, history) |
+| `up -- --no-mail` | Starts the API alone, without Docker (Mailpit); no email is sent |
+| `PHARMACY_WORLD_CONFIG=<file>` | Names an overrides file (`data`, `apiJar`, `apiPort`, `dbPort`…), so a second world runs beside the usual one |
 
 The world never shares a port or a database with the demo run (8080/54330) or the QA copy:
 
@@ -132,9 +134,14 @@ seeded random stream (seed `tz-2026`), so the same seed plays the same market.
   45 background pharmacies across 15 regions join over the first five weeks.
 - **A simulated day.**
   - 07:00 EAT: new pharmacies join and transfers arrive.
-  - 08:00: tills open.
+  - 08:00: everyone at a till opens a shift with a float (a new pharmacy requires one to sell).
   - Every hour until 20:00: customers buy. They pay by cash, M-Pesa, Mixx or Airtel (by reference),
-    push payment, card, insurance or on account.
+    push payment, card, insurance or on account. Prescription and controlled medicines are sold at
+    the pharmacist's till (`sales.dispense_rx`; a cashier may not dispense) against a whole
+    prescription: prescriber and registration, reference, patient and a date within six months.
+  - 10:00: a few returns. A refund is a manager's (`sales.refund`: the branch manager, else the
+    owner), from their own shift, opened for it with a float when they have none. Only an
+    over-the-counter line goes back to the shelf.
   - 20:00: tills close with a cash count.
   - 21:00, the back office: deliveries (some late or short), expiries, transfers, reorders, supplier
     payments, expenses, collections, claim batches, adjudication and remittances, month-end counts
@@ -166,6 +173,12 @@ Other checks run inline as the world works:
 - **The day after each period lock:** a back-dated expense is refused.
 - **Every night:** a pharmacy is suspended only after its grace period runs out unpaid, and
   paying what it owes brings it back.
+- **Approvals:** when the API answers 403 `approval_required` (a refund, an expiry write-off, a
+  count loss or a till difference above the pharmacy's limit; any controlled write-off), a second
+  person approves on the same screen (`POST /approvals` with their sign-in and password, then the
+  request again with `X-Approval`). The approver is an owner or a branch manager of that branch,
+  never the requester; the first approval in each pharmacy also proves the API refuses
+  self-approval. The focal chains keep a TZS 2,000 limit, so approvals happen every day.
 
 A failure is written to `pharmacy-world/.data/findings.jsonl` and shown in the report. When a check
 fails, find the root cause before trusting the count. One bug can fail hundreds of nightly checks.
@@ -176,6 +189,7 @@ fails, find the root cause before trusting the count. One bug can fail hundreds 
 |---|---|---|
 | Quarter 1 (Jan 2027 sim) | Receiving more of a batch at a new cost kept the old cost; the ledger's inventory drifted above stock at cost | `pharmacy-core-api` PR #6: weighted-average batch cost |
 | Quarter 1 (Dec 2026 sim) | Simultaneous sign-ins of one person returned 409 `stale_version` | `pharmacy-core-api` PR #6: the sign-in update skips the version check |
+| Batch 10 run (28 Dec 2026 sim) | Two claim rejections charged to one new patient at once both create the patient's receivable account; the second fails on `accounts_tenant_uid_customer_uid_key` and waits for the event's redelivery, so until then ledger 1100 is above what customers owe (TZS 500 in TUMAINI) | Open: make the account's creation idempotent (insert … on conflict do nothing, then read) |
 
 ### Gotchas
 
@@ -185,7 +199,11 @@ fails, find the root cause before trusting the count. One bug can fail hundreds 
   real-time cron. The world triggers the daily work itself (`POST /platform/subscriptions/run`
   with `asOf`).
 - **Batches.** A batch number has one expiry date, so the world names manufacturer lots by month.
-- **Phones.** They must be in international form (`+255…`).
+- **Phones.** The API keeps every phone in E.164 (`+255…`), turning a local number into it with the
+  pharmacy's country code.
+- **Roles.** Pharmacists sell and dispense but do not refund or adjust stock; store keepers and
+  managers adjust; managers refund and approve. A shop whose only manager is the one asking cannot
+  get an approval: the world counts it as `approval-unavailable`.
 - **List size.** List pages hold at most 100 items.
 - **The web app's date.** "Today" is the browser's real date. Move the date pickers into the
   simulated quarter.
