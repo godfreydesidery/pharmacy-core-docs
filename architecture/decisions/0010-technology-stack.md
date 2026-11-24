@@ -18,6 +18,17 @@ The system must be modern and supported for years. Spring Boot 3.5's open-source
 | Web | Angular 21: standalone components, signals, built-in control flow, functional guards and interceptors, lazy routes |
 | Local / tests | Embedded PostgreSQL (zonky), with the production roles |
 
+## Update, 24 November 2026
+
+The stack has moved up its own release lines since this decision, which stands:
+
+| Layer | Now |
+|---|---|
+| Language | Java 21 bytecode (`java.version` 21), run on a Java 25 runtime (Eclipse Temurin 25 in CI and the image) |
+| Framework | Spring Boot 4.2, Spring Modulith 2.2, springdoc 3.2 |
+| Database | PostgreSQL 18 (embedded PostgreSQL 18 locally and in tests) |
+| Web | Angular 22, built and served with Node 26 |
+
 ## Consequences
 - Long support windows and current idioms.
 - Boot 4 moved packages (Jackson 3, modular auto-configuration), so some older examples on the web won't apply as written.

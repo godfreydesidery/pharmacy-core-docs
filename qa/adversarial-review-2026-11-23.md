@@ -412,6 +412,61 @@ Each batch is about one PR per repo. Batches 1 and 2 are mostly small changes an
 - **STD-17:** money scale per currency.
 - **STD-18:** GTIN check digit; batch numbers case-insensitive.
 
+### Batch 10: Leftovers and the owner's decisions of 24 Nov
+
+> **Status 24 Nov 2026: built in five streams; contract §25.** The leftovers that every earlier batch listed as "Still open", the findings no batch took up, and the owner's answers of 24 Nov (§4, answers 8–15).
+>
+> Done:
+> - **Security and privacy:**
+>   - prescription scans, claim exports and recalls follow `health.view`; claim batches go out with the new `insurance.claims_export`;
+>   - upload links work once (INT-9);
+>   - account messages are sealed while queued (AUTH-8);
+>   - email change has an undo link (AUTH-13);
+>   - codes are keyed hashes (AUTH-16);
+>   - every request keeps its pharmacy's idle limit (AUTH-17);
+>   - `event_publication` holds no secrets, and the app role cannot delete from it (ISO-11);
+>   - webhooks are pinned to the checked address (INT-14);
+>   - the temporary password is no longer kept in history state (WEB-16).
+> - **Money, audit and operations:**
+>   - supplier credit notes, and a supplier return lowers its receipt's open amount (FRD-16);
+>   - foreign receipts are converted once (STD-17);
+>   - supplier statements are paged;
+>   - notification senders are bounded;
+>   - last activity is recorded across instances;
+>   - owners get a daily digest of sensitive actions (FRD-19);
+>   - audit entries record IP, device, session and outcome, and exports and root requests are audited (STD-22);
+>   - the default audit partition is watched and repaired (OPS-18);
+>   - till events record no-sales and abandoned carts (FRD-20).
+> - **Web:**
+>   - the till: UX-5, UX-6, UX-11 (a new customer at the till, with the narrow `partners.create_at_till`) and A11Y-5/6;
+>   - confirms with figures (UX-12);
+>   - plurals, translated titles and receipt (i18n-1);
+>   - UX-14 to UX-18;
+>   - drafts survive a forced sign-out;
+>   - 124 more fields converted;
+>   - an axe check in CI.
+> - **Standards:**
+>   - one invoice series per branch (STD-4);
+>   - problem types, `WWW-Authenticate`, `Location` and the API version (STD-14..16);
+>   - E.164 phones (STD-19);
+>   - FHIR without empty elements (STD-20);
+>   - the PRD matches ADR 0008 (STD-25).
+>   The pharmacy-world simulation opens shifts, uses approvals and sends whole prescriptions. Its run found a receivables race, now fixed.
+> - **The owner's decisions:**
+>   - shared counter PCs (WEB-5);
+>   - passwords of 15 characters, or 8 with two-factor (STD-21);
+>   - two root admins to lift a hold or erase a pharmacy (FRD-18);
+>   - the owner may approve alone when nobody else can;
+>   - a monthly expiry write-down with admin-set bands, and a journal-line check (STD-3);
+>   - VAT apportionment (automatic or a fixed percent) and debit notes (STD-2).
+>
+> Still open:
+> - The owner's accountant confirms the write-down and apportionment methods (contract §25).
+> - The TRA VFD provider: the owner chooses one and shares its API; the adapter goes behind the existing fiscal port.
+> - Debit notes have no web form yet (API only).
+> - About 121 `.field` blocks still rely on the run-time label linker.
+> - No till button records a no-sale (drawer); the API accepts `NO_SALE`.
+
 ---
 
 ## 3. Findings by area
@@ -661,7 +716,20 @@ These came out of the review but change behaviour, so they need your answer befo
 
 | 7 | **Scaling:** the system must run as **several instances at once** (for example several ECS tasks). The following must therefore work across instances: background jobs (one runner per job, `SKIP LOCKED` claims), sign-in and rate limits, the per-pharmacy request cap, provider health, live notifications (SSE fan-out) and file storage (S3-compatible, no local volume). Fix deployment.md to match (OPS-8, INT-12, AUTH-14, OPS-4). |
 
-Still open from the list above: 8 (TZS decimals) and 9 (shared-PC mode).
+### Owner's answers (24 Nov 2026)
+
+| # | Decision |
+|---|---|
+| 8 | **TZS** keeps two decimals on screens and receipts (UX-13: no change). |
+| 9 | **Shared counter PCs:** a per-pharmacy setting, OFF by default. When ON, the session ends when the browser closes, and parked sales expire at the end of the business day. |
+| 10 | **Passwords:** 15 characters when the password is the only factor, 8 with two-factor (NIST 800-63B). Existing passwords keep working. |
+| 11 | **Legal hold lift and erasure:** a second root admin approves. With only one root account, both are refused. |
+| 12 | **Inventory costing:** keep FEFO batch cost, and add a monthly expiry write-down and a journal-line check. The pharmacy's admins set the write-down bands. |
+| 13 | **VAT:** partial-exemption apportionment (automatic by sales or a fixed agreed percent, chosen by admins) and debit notes, both now. The accountant confirms the methods. |
+| 14 | **TRA VFD:** go through an approved VFD provider's API. The owner chooses the provider and shares its documentation and a test account. |
+| 15 | **Follow-ups:** the owner may self-approve when nobody else can approve (logged as a self-approval); claim batches go out with the narrow `insurance.claims_export`; cashiers and pharmacists add a customer at the till with the narrow `partners.create_at_till`. |
+
+Every decision in §4 is now answered.
 
 ## 5. What held up well
 

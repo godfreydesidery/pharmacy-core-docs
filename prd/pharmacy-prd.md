@@ -317,10 +317,10 @@ These are hard rules for engineering. They exist so the targets in §6.1 can be 
 
 | Area | Requirement |
 |---|---|
-| **Stateless services** | No session or user state in application memory. Sessions and tokens live in Redis or a JWT, so any node can serve any request. Follows the 12-Factor App principles. |
+| **Stateless services** | No session or user state in application memory, so any node can serve any request (12-Factor App). Sessions are opaque, revocable tokens whose hashes live in PostgreSQL (ADR 0008); what instances share (rate limits, job leases, the live stream, idempotency keys) lives in PostgreSQL too. |
 | **Horizontal autoscaling** | API and worker pods scale on CPU, request rate and queue depth. The minimum is 2 replicas per service across 2 or more availability zones. |
 | **Database scaling** | Writes go to the primary and reads go to replicas. Connection pooling (PgBouncer). Large tables (`stock_movement`, `sale_line`, `journal_line`, `audit_log`) are partitioned by month. Tenants can be sharded by `tenant_id` (§8.4). |
-| **Caching** | Catalogue, prices and settings are cached in Redis. Each cache entry has a TTL and is also cleared by an event whenever the data changes. HTTP caching (ETag) for read-only lookups. |
+| **Caching** | Small read caches per instance, each with a short TTL (settings, a tenant's time zone, the edge's access checks), cleared by an event where the data changes. HTTP caching (ETag) for read-only lookups. A shared cache such as Redis is added only when measurements call for it (ADR 0008). |
 | **Asynchronous work** | Anything slower than ~200 ms or calling a third party goes through the message broker: fiscal submission, SMS/email, report generation and claims. Retries use exponential backoff, with a dead-letter queue. |
 | **Idempotency** | Every write endpoint accepts an `Idempotency-Key` header. Message consumers are idempotent, so delivering the same message twice is safe. |
 | **Concurrency control** | Stock is reserved with optimistic locking (version column) or row-level locks scoped to one batch. A global lock is never taken. |
@@ -371,7 +371,8 @@ The system must conform to the standards below. "Must" items are launch criteria
 | **ISO/IEC 27701** | Privacy information management on top of 27001 | Should |
 | **SOC 2 Type II** | For enterprise and international customers | Should |
 | **OWASP ASVS L2** & **OWASP Top 10** | Secure development requirements. SAST, DAST and dependency scanning in CI | Must |
-| **OAuth 2.1 / OpenID Connect** | Authentication for the API and SSO. Short-lived access tokens and refresh-token rotation | Must |
+| **Session authentication** (ADR 0008) | Opaque bearer tokens, stored only as SHA-256 hashes, revocable at once (sign-out, forced logout, password change); idle sign-out; step-up re-authentication for sensitive changes; TOTP and passkeys | Must |
+| **OAuth 2.1 / OpenID Connect** | Single sign-on, and tokens for third-party API clients, added as another way to create a session (ADR 0008) | Could (later) |
 | **NIST SP 800-63B** | Password and MFA policy (length rather than complexity rules, breached-password check, TOTP) | Must |
 | **PCI DSS v4.0** | Card data never touches our servers. Use tokenised or P2PE terminals and hosted payment pages to stay at SAQ-A / P2PE scope | Must |
 | **Data-protection law** (Tanzania **PDPA 2022**, Kenya **DPA 2019**, **GDPR** where applicable) | Lawful basis, consent, data-subject rights (access, export, erasure where lawful), breach notification, data residency options | Must |
@@ -443,14 +444,16 @@ The system must conform to the standards below. "Must" items are launch criteria
       exports)                  reports & dashboards)
 ```
 
+This is the target at scale. As built (ADRs 0001, 0006, 0008): one modular monolith run as several instances behind a load balancer; sessions, rate limits, job leases, idempotency keys and the live stream's fan-out in PostgreSQL; events through the transactional outbox (Spring Modulith) rather than a broker. Redis and a broker come in only when measurements call for them, without changing the API.
+
 ### 8.3 Suggested stack (non-binding)
 
 | Layer | Option |
 |---|---|
 | Frontend | React/Next.js or Angular, PWA with service worker, IndexedDB |
 | Backend | Java (Spring Boot) or Node.js (NestJS), modular monolith |
-| Database | PostgreSQL 16 with row-level security; read replicas |
-| Cache | Redis |
+| Database | PostgreSQL with row-level security (18 as built); read replicas |
+| Cache | Per-instance read caches; Redis only if measurements call for it (ADR 0008) |
 | Messaging | Kafka (high volume) or RabbitMQ (simpler ops) |
 | Search | PostgreSQL trigram search to start; OpenSearch when the catalogue grows large |
 | Analytics | ClickHouse or BigQuery for reporting read models |
