@@ -1,6 +1,6 @@
 # Local development
 
-You need JDK 21, Maven 3.9 and Node 22 with the Angular CLI. You don't need to install a database.
+You need JDK 21 or later (CI and the image run Java 25), Maven 3.9 and Node 26 with the Angular CLI (Angular 22 refuses older Node). You don't need to install a database.
 
 ## 1. API
 

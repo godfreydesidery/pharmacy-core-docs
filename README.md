@@ -6,8 +6,8 @@ Documentation for **Pharmacy Core**, a multi-tenant, multi-branch pharmacy manag
 
 | Repository | What | Stack |
 |---|---|---|
-| `pharmacy-core-api` | The backend: one modular monolith exposing `/api/v1` | Java 21, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 17 |
-| `pharmacy-core-web` | The web app for the back office and POS | Angular 21 |
+| `pharmacy-core-api` | The backend: one modular monolith exposing `/api/v1` | Java 21 bytecode on a Java 25 runtime, Spring Boot 4.2, Spring Modulith 2.2, PostgreSQL 18 |
+| `pharmacy-core-web` | The web app for the back office and POS | Angular 22, built and served with Node 26 |
 | `pharmacy-core-docs` | This repository: product, contract, architecture, runbooks | Markdown, Mermaid |
 
 The web app and any external system talk to the API only through the contract in `contracts/api-v1.md`.

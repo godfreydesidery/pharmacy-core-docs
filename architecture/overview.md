@@ -9,9 +9,9 @@ flowchart LR
   staff([Pharmacy staff<br/>admin, pharmacist, cashier,<br/>store keeper, accountant])
   root([Root administrator<br/>platform operator])
   ext([External systems<br/>payments, ERP, POS, e-commerce])
-  web[pharmacy-core-web<br/>Angular 21]
+  web[pharmacy-core-web<br/>Angular 22]
   api[pharmacy-core-api<br/>Spring Boot 4 modulith]
-  db[(PostgreSQL 17<br/>schema per module, RLS)]
+  db[(PostgreSQL 18<br/>schema per module, RLS)]
   pay[Payment providers<br/>M-Pesa, cards, insurers]
   tax[Tax authority<br/>e.g. TRA VFD]
   staff --> web
@@ -28,9 +28,9 @@ flowchart LR
 
 | Container | Technology | Notes |
 |---|---|---|
-| Web app | Angular 21 SPA | Talks only to `/api/v1`. Sends `Authorization`, `X-Tenant-Id` and `X-Branch-Id` |
-| API | Java 21, Spring Boot 4.1, Spring Modulith 2.1 | Stateless, so any number of instances can run behind a load balancer. Uses virtual threads |
-| Database | PostgreSQL 17 | One schema per module plus `platform`. Forced RLS on every tenant table. Two roles: owner and app |
+| Web app | Angular 22 SPA | Talks only to `/api/v1`. Sends `Authorization`, `X-Tenant-Id` and `X-Branch-Id` |
+| API | Java 21 bytecode on a Java 25 runtime, Spring Boot 4.2, Spring Modulith 2.2 | Stateless, so any number of instances can run behind a load balancer. Uses virtual threads |
+| Database | PostgreSQL 18 | One schema per module plus `platform`. Forced RLS on every tenant table. Two roles: owner and app |
 
 ## 3. Module map
 
