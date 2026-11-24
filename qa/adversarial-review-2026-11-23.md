@@ -339,6 +339,35 @@ Each batch is about one PR per repo. Batches 1 and 2 are mostly small changes an
 
 ### Batch 8: Till robustness, usability and accessibility
 
+> **Status 24 Nov 2026: built (api `batch8-api`; web `batch8-web`). Contract §23.**
+>
+> Done:
+> - **Till (WEB-2):** the cart locks after an uncertain checkout, and "Check again" resends byte-identical; the server fingerprints the request, refuses a reused key with a different cart and finds a sale by its key.
+> - **Till (WEB-5, 9, 10; UX-1, 2):**
+>   - parked sales hold uids only, expire after 12 hours and survive sign-out (owner's rule);
+>   - push payments are bound to their sale;
+>   - "Exact" is computed in minor units;
+>   - unpriced lines are blocked;
+>   - problems show inline in the Payment card.
+> - **Shared components (A11Y-1 to 4, WEB-15):**
+>   - one Dialog with focus trap and restore, Escape closing only the top dialog, and a safe default button, plus a queue;
+>   - labels linked (124 converted to `app-field`, 174 linked at run time);
+>   - 17 keyboard row links;
+>   - colour contrast AA in every look (checked in CI).
+> - **UX-4:** the leave guard on money and stock forms, and sticky Save.
+> - **UX-7:** no browser `confirm()` (checked in CI).
+> - **UX-3:** 353 of 353 API reasons have a line in English and Swahili, the main ones naming their values; the list is generated from the API and checked in CI.
+> - **WEB-12, UX-8, UX-9, UX-10:**
+>   - after a sign-out, the return page reopens only for the same user;
+>   - the suspended page says why, and an unpaid pharmacy can still pay;
+>   - staff logins are told to ask their manager for a password reset;
+>   - a list that fails to load offers Retry.
+>
+> Still open:
+> - About 230 `.field` blocks are linked at run time, not converted.
+> - Drafts do not survive an idle sign-out.
+> - No axe check runs in CI.
+
 - **WEB-2:** lock the cart after an uncertain checkout; keep the key with a parked sale.
 - **UX-1:** block unpriced lines before Complete sale.
 - **UX-2:** checkout problems shown in the Payment card, not toasts.
