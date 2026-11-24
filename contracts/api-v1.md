@@ -1146,3 +1146,40 @@ Batch 1: the permission check could not see a pending upload).
 - Journal numbers are now `JV-<year>-000001` per pharmacy and year, without gaps. Old numbers stay.
 - Balances, the trial balance, the balance sheet and VAT read the daily balances. The stock list reads the per-product stock summary.
 
+## 23. The till and refusals (Batch 8, 24 Nov 2026)
+
+**POST /sales idempotency**
+- **Same key, same request:** returns the original sale. The request's fingerprint ignores key order and spacing.
+- **Same key after a sale, different request:** `422 idempotency_key_reused`, with members `saleUid` and `saleNumber`.
+- **Refused first attempt:** nothing is recorded, so the key stays free.
+- **Concurrent duplicates:** they wait for the first, then get the same answer.
+- **Lookup:** `GET /sales?idempotencyKey=<key>` returns that sale, or an empty page.
+
+**Push payments**
+- `POST /pos/payment-requests` takes `saleKey`.
+- At checkout, a request bound to another sale's key is `422 payment_mismatch`. A request without a key is accepted.
+
+**Products by uid:** `GET /pos/products?uids=a,b,c` (`sales.sell`), at most 100. Unknown products are left out; more than 100 is `422 too_many_uids` (`max`).
+
+**Problem members:** every refusal, including those raised at the edge, carries its extra members. The main ones:
+
+| Reason | Members |
+|---|---|
+| `insufficient_stock` | `product`, `available`, `requested` (or `batch`) |
+| `payment_short` | `paid`, `total` |
+| `credit_limit_exceeded` | `limit`, `customer`, `available`, `currency` |
+| `plan_limit_reached` | `limit`, `plan`, `resource`, `used` |
+| `future_date` | `date`, `today` |
+| `session_idle` | `idleMinutes` |
+
+Amounts are JSON numbers; dates are ISO.
+
+**Suspension**
+- The membership (sign-in and `/auth/me`) carries `suspensionKind` (UNPAID, DISPUTE, ABUSE, OTHER; null unless suspended) and `legalHold`.
+- `tenant_suspended`, `tenant_suspended_read_only` and `tenant_closed` carry the same members.
+
+**Web**
+- The till locks the cart after an uncertain checkout and resends byte-identical requests.
+- Parked sales hold only uids, expire after 12 hours, and survive sign-out.
+- Every refusal reason has an English and Swahili line, with values.
+
