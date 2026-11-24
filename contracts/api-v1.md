@@ -544,7 +544,7 @@ Rules:
 4. **Missing rates.** With no rate, the API refuses with `422 rate_missing` (field `currency`): record one under Finance → Exchange rates.
 5. **Stale rates.** `stale: true` when the rate took effect more than 7 days before the day. Clients show a warning; the API still uses it.
 6. **Realised differences.** Settling a foreign-currency payable or receivable at a rate other than the one it was booked at realises an exchange difference, posted to 7000 FX Gains/Losses.
-7. **Rounding.** Conversions round **half-even** (banker's rounding) to the target currency's ISO 4217 minor units, so repeated conversions do not drift. Clients format amounts with `Intl.NumberFormat` and the currency, which takes its minor units and rounds half-up for display.
+7. **Rounding.** Every amount, conversions included, rounds **half-up** (a tie away from zero) to its currency's ISO 4217 minor units: 0 for UGX, RWF and JPY; 2 for TZS, KES and USD; 3 for KWD (Batch 9, STD-17; it was half-even for conversions before). Tax receipts round half-up, and a refund is exactly the negative of its sale. Rates keep 6 to 10 decimals until they become an amount. The web rounds the same way.
 8. **Daily refresh.** A configured provider (`pharmacy.integrations.fx.provider=openexchangerates`, with `base-url` and `api-key`) is refreshed every day at 06:00 UTC for every tenant that accepts a foreign currency.
 
 ## 15. Health
@@ -1182,4 +1182,67 @@ Amounts are JSON numbers; dates are ISO.
 - The till locks the cart after an uncertain checkout and resends byte-identical requests.
 - Parked sales hold only uids, expire after 12 hours, and survive sign-out.
 - Every refusal reason has an English and Swahili line, with values.
+
+## 24. Regulation and standards (Batch 9, 24 Nov 2026)
+
+The complete, generated reference is now `docs/openapi.json` in the api repo (OpenAPI 3.1, 347+ operations, each with `x-scope` and `x-permission` from `@Access`). CI fails when it differs from the code. This guide stays the readable summary.
+
+**Tax receipts (STD-1)**
+- `sales.fiscal_documents` holds a RECEIPT, a CREDIT_NOTE (for a return) and a Z_REPORT (a branch's day). Status goes PENDING → ISSUED / FAILED.
+- Each holds the receipt number, the verification code, the QR payload and the global and daily counters.
+- Documents are issued after commit and retried by the `fiscal-documents` job.
+- Routes:
+  - `GET /sales/{uid}/fiscal-documents`
+  - `POST /fiscal/documents/{uid}/retry`
+  - `GET /fiscal/z-reports?branchUid=`
+  - `POST /fiscal/z-reports {branchUid, day}`
+- A simulator (`simulator`) runs only in sim, local and test. A real TRA VFD adapter needs TRA's specification and credentials.
+
+**VAT (STD-2)**
+- Settings: `vatRegistered`, `tin` (9 digits), `vrn`.
+- Products: `taxCategory` STANDARD, ZERO_RATED or EXEMPT. `taxRatePercent` is derived from it: the standard rate, or 0.
+- A pharmacy that is not registered charges no VAT.
+- Goods receipts take `vatAmount` and expenses take `vatAmount`; both post input VAT to **1150 VAT Receivable**.
+- `GET /reports/vat` adds `inputVat`, `netOutputVat` and `categories[]`.
+- At migration, a pharmacy that charged no VAT (a 0% standard rate and no taxed product) was recorded as not registered.
+
+**Personal data (STD-5)**
+- `POST /customers/{uid}/data-export`: a ZIP of everything about one person. Needs `partners.view`, `data.export` and `health.view`.
+- `POST /customers/{uid}/anonymise`: erasure by anonymisation; money and stock records stay. Refused with `422 subject_has_balance`, `subject_under_legal_hold` or `409 customer_anonymised`.
+- `PUT /customers/{uid}?dataSubjectRequest=true`: a correction, logged as a request.
+- Consents: `GET/POST /customers/{uid}/consents`, for SMS_RECEIPTS, MARKETING and INSURER_SHARING.
+- Requests: `GET/POST /privacy/requests`, `…/{uid}/complete` and `…/refuse` (DSR-000001, due in 30 days).
+- Health details (prescriptions, patients, diagnoses) need the new `health.view` permission. Reads are audited, and without the permission they come back withheld.
+
+**Dispensing (STD-7)**
+- A cart with a PRESCRIPTION or CONTROLLED product needs `sales.dispense_rx`, else `403 dispense_not_allowed`.
+- The prescription needs a prescriber name and registration number, the patient's name and its date: `prescription_incomplete`, `prescription_date_in_future`, `prescription_expired` (6 months).
+- The dispenser is recorded (`dispensedBy`).
+- `GET /controlled-drugs` is paged.
+
+**TMDA (STD-8)**
+- Products: `tmdaRegistrationNumber`.
+- Adverse drug reactions:
+  - `GET/POST /adverse-reactions` (ADR-000001); create needs `adr.report`, view needs `health.view`.
+  - `GET /adverse-reactions/{uid}`.
+  - `GET /adverse-reactions/{uid}/export` returns a CSV in the yellow form's order.
+
+**Concurrency (STD-10)**
+- These single-item GETs answer `ETag: "<version>"`: products, customers, suppliers, settings, roles, branches, price lists.
+- Their PUTs honour `If-Match`. A mismatch is `412 precondition_failed` (`currentVersion`).
+- `PHARMACY_REQUIRE_IF_MATCH=true` makes a missing header `428 precondition_required`. It is off by default.
+
+**Money and codes (STD-17, STD-18)**
+- Every amount is rounded half-up to its currency's minor units (see Rounding above).
+- A base currency with more than 2 decimals is `422 currency_not_supported`.
+- A GTIN must carry a valid GS1 check digit, else `422 invalid_gtin`. Existing products keep the GTIN they have.
+- Batch numbers are matched without regard to case within a product.
+
+**New permissions**
+
+| Permission | Presets | Backfill to existing roles |
+|---|---|---|
+| `sales.dispense_rx` | Administrator, Branch Manager, Pharmacist | Every role that can sell, the Cashier included, so nobody lost what they did |
+| `health.view` | Administrator, Branch Manager, Pharmacist | Built-in Administrator, Branch Manager and Pharmacist, plus custom roles holding `sales.refund` or `catalogue.manage` |
+| `adr.report` | Administrator, Branch Manager, Pharmacist | Same as `health.view` |
 
