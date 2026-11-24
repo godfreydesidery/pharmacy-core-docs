@@ -1367,10 +1367,13 @@ The complete, generated reference is now `docs/openapi.json` in the api repo (Op
 - **FHIR claim export** (`…/fhir`): absent elements are omitted (never "", null, [] or {}).
 
 **Approvals and fixes**
-- **Owner self-approval:** when no other active member who could approve a request exists (holds `approvals.grant` and has access to its branch), the pharmacy's OWNER may approve their own request with their password.
-  - The approval carries `selfApproved: true` and is audited as a self-approval.
-  - As soon as a second eligible approver exists, self-approval is refused again. Non-owners can never self-approve.
-- **Receivables:** a patient's receivable account is created idempotently, so two claim rejections at once no longer fail.
+- **Owner self-approval** (owner decision 24 Nov 2026): `403 approval_required` carries `selfApproval`.
+  - It is true when the requester is the owner (built-in Administrator role) and nobody else active holds `approvals.grant` at that branch.
+  - In that case `POST /approvals` with the requester's own sign-in and password is accepted. The response has `selfApproved: true` and the message "Self-approved by …"; the audit action is `APPROVAL_SELF_GRANTED`, and `APPROVAL_USED` carries `selfApproved`.
+  - Otherwise it is `422 approver_is_requester`, as before. As soon as a second eligible approver exists, self-approval is refused again.
+  - A self-approved destruction needs `witnessName`: the owner is not its witness.
+  - platform V11 adds `approvals.self_approved`.
+- **Receivables:** a customer's receivable account is opened once, even when its first entries race (under the credit lock).
 
 ### The owner's decisions of 24 Nov 2026 (Batch 10, stream 5)
 
