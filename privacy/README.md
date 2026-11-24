@@ -35,8 +35,8 @@ especially for staff with a personal account used across several pharmacies.
 | Whole-pharmacy export | **Built.** Background ZIP of every table and file, signed link for 15 minutes, kept 7 days |
 | Whole-pharmacy closure and erasure | **Built.** Close, 30-day cooling-off, erasure by a root administrator, legal hold stops it |
 | Nightly retention | **Built.** Sessions, codes, invitations, message logs, deliveries, events, exports, audit months |
-| Per-person rights (access, correction, erasure, objection for one customer or patient) | **Planned, Batch 9 (STD-5).** Manual procedure until then |
-| Consent records | **Planned, Batch 9 (STD-5)** |
+| Per-person rights (access, correction, erasure, objection for one customer or patient) | **Built, Batch 9 (STD-5):** per-customer export, logged correction, anonymisation, request register with a 30-day due date |
+| Consent records | **Built, Batch 9 (STD-5):** SMS receipts, marketing and insurer sharing, with given/withdrawn history; SMS receipts respect a withdrawal |
 | PDPC registration, DPO, transfer permit | **Not done.** Owner and counsel |
 
 ## Points for counsel

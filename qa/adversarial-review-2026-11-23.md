@@ -384,6 +384,25 @@ Each batch is about one PR per repo. Batches 1 and 2 are mostly small changes an
 
 ### Batch 9: Regulation and standards
 
+> **Status 24 Nov 2026: built (api `batch9-core`; web `batch9-web`). Contract §24. All nine batches are done.**
+>
+> Done:
+> - **STD-1:** fiscal documents (receipt, credit note, Z) after commit, with a simulator. A real TRA adapter needs TRA's specification.
+> - **STD-2:** VAT registration, TIN and VRN; a tax category per product; input VAT (1150); the full VAT report.
+> - **STD-5:** per-person export, correction, anonymisation, consents, a request register, and `health.view`.
+> - **STD-7:** `sales.dispense_rx`, the required prescription fields with 6-month validity, the dispenser recorded, and a paged register.
+> - **STD-8:** the TMDA number and adverse-drug-reaction reports.
+> - **STD-9:** OpenAPI generated from `@Access` and checked in CI.
+> - **STD-10:** ETag and If-Match (412, with a 428 flag).
+> - **STD-17:** money rounded half-up at the ISO 4217 minor units (UGX end to end).
+> - **STD-18:** GTIN check digits and case-insensitive batch numbers.
+>
+> Still open (owner and counsel):
+> - TRA VFD integration.
+> - Partial-exemption input VAT, and debit notes.
+> - The privacy counsel points C1–C14.
+> - Prescription scans are still readable without `health.view`.
+
 - **STD-1, STD-2:** fiscal-ready design (VFD/EFD port, TIN/VRN, tax categories, input VAT).
 - **STD-5:** PDPA per-person rights and consent.
 - **STD-7, STD-8:** dispensing records (pharmacist sign-off, TMDA number, adverse-drug-reaction reporting).
